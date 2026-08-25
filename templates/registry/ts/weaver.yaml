@@ -1,0 +1,7 @@
+# Weaver-forge config for the generated TypeScript constants module the
+# satellite repos (grafana datasource, perses plugin) vendor.
+# `weaver registry generate ts semconv/generated/ts -t templates -r semconv/registry --future`
+templates:
+  - pattern: semconv.ts.j2
+    filter: .
+    application_mode: single

@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # Validate the registry against the semconv policies and prove both
+  # templates actually render — consumers gate their own generated
+  # output against their pinned ref; this job guarantees any ref they
+  # pin is renderable.
+  weaver:
+    name: registry check + render
+    runs-on: ubuntu-latest
+    env:
+      WEAVER_VERSION: v0.23.0
+      # sha256 of weaver-x86_64-unknown-linux-gnu.tar.xz for WEAVER_VERSION
+      # (open-telemetry/weaver release asset). Bump both together.
+      WEAVER_SHA256: a9822c712d6871bd89d6530f18c5df5cea3821f642e7b8e5e49e985917f7d12d
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Install weaver
+        run: |
+          set -euo pipefail
+          tarball="weaver-x86_64-unknown-linux-gnu.tar.xz"
+          curl -fsSL -o "$RUNNER_TEMP/$tarball" \
+            "https://github.com/open-telemetry/weaver/releases/download/${WEAVER_VERSION}/${tarball}"
+          echo "${WEAVER_SHA256}  $RUNNER_TEMP/$tarball" | sha256sum -c -
+          tar xJf "$RUNNER_TEMP/$tarball" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/weaver-x86_64-unknown-linux-gnu" >> "$GITHUB_PATH"
+      - run: weaver registry check -r registry --future
+      - name: Render both targets (smoke)
+        run: |
+          set -euo pipefail
+          weaver registry generate rust "$RUNNER_TEMP/out-rust" \
+            -t templates -r registry --future
+          weaver registry generate ts "$RUNNER_TEMP/out-ts" \
+            -t templates -r registry --future
+          test -s "$RUNNER_TEMP/out-rust/lib.rs"
+          test -s "$RUNNER_TEMP/out-ts/semconv.ts"
