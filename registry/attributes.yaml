@@ -425,6 +425,116 @@ groups:
           registry.
         examples: [1, 3]
 
+      # RFC 0052 §3.1/§3.5: the ingest publication barrier and the WAL
+      # reclamation state it drives.
+      - id: ourios.ingest.barrier.cut.outcome
+        type:
+          members:
+            - id: stamped
+              value: "stamped"
+              stability: development
+              brief: >-
+                Snapshots installed and the checkpoint advanced — or the
+                cut had no mark to stamp, which is the same decision with
+                nothing to record.
+            - id: retained
+              value: "retained"
+              stability: development
+              brief: >-
+                A sink retained records, a publish registered before the
+                cut failed, or a snapshot write failed, so neither the
+                snapshots nor the mark moved; the next cut covers the
+                records.
+            - id: latched
+              value: "latched"
+              stability: development
+              brief: >-
+                The `cadence_failed` latch holds an epoch at or below the
+                cut's, so the cut was refused and its batches parked.
+            - id: idle
+              value: "idle"
+              stability: development
+              brief: A barrier tick found no cut pending.
+        stability: development
+        brief: >-
+          What one barrier cut decided (RFC 0052 §3.1) — the
+          `ourios.ingest.barrier.cuts` counter's outcome dimension, one
+          attribute on one instrument rather than a counter per outcome.
+      - id: ourios.ingest.barrier.capture.outcome
+        type:
+          members:
+            - id: filled
+              value: "filled"
+              stability: development
+              brief: The pending slot was empty and now holds this cut.
+            - id: coalesced
+              value: "coalesced"
+              stability: development
+              brief: The slot held a cut and this capture folded into it.
+            - id: parked
+              value: "parked"
+              stability: development
+              brief: >-
+                Coalescing would have taken the pending cut past the
+                sink's ceiling, so every drained batch was parked back in
+                the buffers and nothing advanced (RFC0052.14).
+        stability: development
+        brief: >-
+          What one barrier capture did to the pending slot (RFC 0052
+          §3.1).
+      - id: ourios.wal.rotation.state
+        type:
+          members:
+            - id: healthy
+              value: "healthy"
+              stability: development
+              brief: No rotation failure is outstanding.
+            - id: retrying
+              value: "retrying"
+              stability: development
+              brief: >-
+                A rotation failed and is retried on the next append,
+                within the `rotation_retry_attempts` budget (RFC 0052
+                §3.3).
+            - id: terminal
+              value: "terminal"
+              stability: development
+              brief: >-
+                The retry budget is spent; appends are refused until a
+                restart (RFC 0052 §3.3).
+        stability: development
+        brief: >-
+          The WAL's rotation-failure state (RFC 0052 §3.3) — the
+          `ourios.wal.rotation.status` metric's state dimension.
+      - id: ourios.wal.retain_floor.state
+        type:
+          members:
+            - id: unknown
+              value: "unknown"
+              stability: development
+              brief: >-
+                No housekeeping pass has derived the floor yet; nothing
+                is reclaimed.
+            - id: none
+              value: "none"
+              stability: development
+              brief: No snapshot consumer exists; the checkpoint alone governs.
+            - id: min
+              value: "min"
+              stability: development
+              brief: The floor is the minimum over every tenant's snapshot horizon.
+            - id: pinned
+              value: "pinned"
+              stability: development
+              brief: >-
+                Some tenant has no valid snapshot, so the floor includes
+                its oldest surviving frame (RFC0052.13).
+        stability: development
+        brief: >-
+          The kind of the WAL's retain floor (`RetainFloor`, RFC 0052
+          §3.2) — the `ourios.wal.retain_floor.status` metric's state
+          dimension.
+
   # `log.record.template` — a LOCAL definition, not a `ref:` (RFC 0050
   # §3.6): the attribute is not in the upstream registry to reference
   # (its `log` namespace holds only log.iostream, log.file.*,
