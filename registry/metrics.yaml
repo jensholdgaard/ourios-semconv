@@ -626,3 +626,249 @@ groups:
       cache-warm acquisition gate reads.
     instrument: histogram
     unit: "By"
+
+  # RFC 0052 §3.5 (RFC0052.7): the WAL's reclamation state. Every figure
+  # is observed from the WAL's in-memory accounting (`WalMetrics`,
+  # `ReclaimState`), never from a directory inspection.
+  - id: metric.ourios.wal.size
+    type: metric
+    metric_name: ourios.wal.size
+    stability: development
+    brief: On-disk bytes across every WAL segment file.
+    instrument: updowncounter
+    unit: "By"
+
+  - id: metric.ourios.wal.unflushed.size
+    type: metric
+    metric_name: ourios.wal.unflushed.size
+    stability: development
+    brief: >-
+      Bytes appended to the WAL and not yet made durable by an fsync —
+      the figure the batched-fsync decision reads.
+    instrument: updowncounter
+    unit: "By"
+
+  - id: metric.ourios.wal.segment.count
+    type: metric
+    metric_name: ourios.wal.segment.count
+    stability: development
+    brief: WAL segment files present, the open segment included.
+    instrument: updowncounter
+    unit: "{segment}"
+
+  - id: metric.ourios.wal.unreclaimed.size
+    type: metric
+    metric_name: ourios.wal.unreclaimed.size
+    stability: development
+    brief: >-
+      Frame bytes the WAL still holds — everything not yet reclaimed,
+      including the post-checkpoint tail, the open segment and anything
+      the retain floor keeps (RFC 0052 §3.5).
+    note: >-
+      Deliberately not the below-checkpoint figure: during an outage the
+      checkpoint stops advancing, so that figure reads flat while this one
+      grows. RFC 0053's WAL bound is taken on this figure.
+    instrument: updowncounter
+    unit: "By"
+
+  - id: metric.ourios.wal.unreclaimed.age
+    type: metric
+    metric_name: ourios.wal.unreclaimed.age
+    stability: development
+    brief: >-
+      Age of the oldest unreclaimed WAL frame — the figure to alert on
+      when reclamation stalls (RFC 0052 §3.5).
+    note: >-
+      No frame carries a timestamp, so the age is the conservative proxy
+      of the oldest surviving segment's UUIDv7 creation time. Not
+      reported while unreclaimed frame bytes are zero, so an idle WAL
+      holding only an empty open segment does not report a growing age.
+    instrument: gauge
+    unit: "s"
+
+  - id: metric.ourios.wal.retain_floor.status
+    type: metric
+    metric_name: ourios.wal.retain_floor.status
+    stability: development
+    brief: The kind of the WAL's current retain floor (RFC 0052 §3.2).
+    note: >-
+      A state metric: one timeseries per `ourios.wal.retain_floor.state`
+      value, 1 for the current kind and 0 for the others.
+    instrument: updowncounter
+    unit: "1"
+    attributes:
+      - ref: ourios.wal.retain_floor.state
+        requirement_level: required
+
+  - id: metric.ourios.wal.retain_floor.pinned_tenant.count
+    type: metric
+    metric_name: ourios.wal.retain_floor.pinned_tenant.count
+    stability: development
+    brief: >-
+      Tenants pinning the retain floor at their oldest surviving frame
+      because they have no valid snapshot; 0 unless the floor is
+      `pinned`. What tells a lagging tenant from an unexplained stall
+      (RFC0052.13).
+    instrument: updowncounter
+    unit: "{tenant}"
+
+  - id: metric.ourios.wal.retain_floor.lag.size
+    type: metric
+    metric_name: ourios.wal.retain_floor.lag.size
+    stability: development
+    brief: >-
+      Frame bytes in the segments the retain floor keeps below the
+      checkpoint (`lag_bytes`, RFC 0052 §3.5).
+    instrument: updowncounter
+    unit: "By"
+
+  - id: metric.ourios.wal.retain_floor.lag.segment.count
+    type: metric
+    metric_name: ourios.wal.retain_floor.lag.segment.count
+    stability: development
+    brief: >-
+      Segments the retain floor keeps below the checkpoint
+      (`lag_segments`, RFC 0052 §3.5).
+    instrument: updowncounter
+    unit: "{segment}"
+
+  - id: metric.ourios.wal.rotation.status
+    type: metric
+    metric_name: ourios.wal.rotation.status
+    stability: development
+    brief: The WAL's rotation-failure state (RFC 0052 §3.3).
+    note: >-
+      A state metric: one timeseries per `ourios.wal.rotation.state`
+      value, 1 for the current state and 0 for the others.
+    instrument: updowncounter
+    unit: "1"
+    attributes:
+      - ref: ourios.wal.rotation.state
+        requirement_level: required
+
+  - id: metric.ourios.wal.rotation.consecutive_failures
+    type: metric
+    metric_name: ourios.wal.rotation.consecutive_failures
+    stability: development
+    brief: >-
+      Consecutive failed rotation attempts counted against the
+      `rotation_retry_attempts` budget; 0 when healthy (RFC 0052 §3.3).
+    instrument: gauge
+    unit: "{failure}"
+
+  - id: metric.ourios.wal.housekeeping.horizon.remaining
+    type: metric
+    metric_name: ourios.wal.housekeeping.horizon.remaining
+    stability: development
+    brief: >-
+      Segments a received snapshot horizon has not yet been applied to,
+      summed over tenants, as of the last housekeeping pass
+      (`horizon_remaining`, RFC 0052 §3.5/§3.7).
+    note: >-
+      With `ourios.wal.housekeeping.unlink.remaining`, what turns the
+      pass's `capped` flag into a trend: a draining backlog and a growing
+      one both read `capped`.
+    instrument: gauge
+    unit: "{segment}"
+
+  - id: metric.ourios.wal.housekeeping.unlink.remaining
+    type: metric
+    metric_name: ourios.wal.housekeeping.unlink.remaining
+    stability: development
+    brief: >-
+      Reclaimable segments not yet unlinked, plus entries reclaiming or
+      uncertain, as of the last housekeeping pass (`unlink_remaining`,
+      RFC 0052 §3.5/§3.7).
+    instrument: gauge
+    unit: "{segment}"
+
+  # RFC 0052 §3.1: the ingest publication barrier — the one path that
+  # stamps the WAL checkpoint.
+  - id: metric.ourios.ingest.barrier.cuts
+    type: metric
+    metric_name: ourios.ingest.barrier.cuts
+    stability: development
+    brief: Barrier cuts run, by what each decided (RFC 0052 §3.1).
+    note: >-
+      Only `stamped` advances the checkpoint. A run of `retained` means
+      the store is refusing writes; any `latched` means the
+      `cadence_failed` latch is set and nothing stamps until a restart.
+    instrument: counter
+    unit: "{cut}"
+    attributes:
+      - ref: ourios.ingest.barrier.cut.outcome
+        requirement_level: required
+
+  - id: metric.ourios.ingest.barrier.captures
+    type: metric
+    metric_name: ourios.ingest.barrier.captures
+    stability: development
+    brief: >-
+      Barrier captures, by what each did to the pending slot (RFC 0052
+      §3.1). `parked` is the RFC0052.14 ceiling leg.
+    instrument: counter
+    unit: "{capture}"
+    attributes:
+      - ref: ourios.ingest.barrier.capture.outcome
+        requirement_level: required
+
+  - id: metric.ourios.ingest.barrier.checkpoint.writes
+    type: metric
+    metric_name: ourios.ingest.barrier.checkpoint.writes
+    stability: development
+    brief: >-
+      WAL checkpoint writes the barrier attempted when stamping a cut's
+      mark (RFC 0052 §6.7). A failed write carries `error.type` and
+      leaves the previous mark in force, so nothing past it is reclaimed.
+    note: >-
+      One counter for successes and failures, per the OTel
+      recording-errors convention. A cut with no mark writes nothing and
+      is not counted.
+    instrument: counter
+    unit: "{write}"
+    attributes:
+      - ref: error.type
+        requirement_level:
+          conditionally_required: If and only if the write failed.
+
+  - id: metric.ourios.ingest.barrier.snapshot.writes
+    type: metric
+    metric_name: ourios.ingest.barrier.snapshot.writes
+    stability: development
+    brief: >-
+      Per-tenant miner-snapshot writes the barrier attempted while
+      installing a cut (RFC 0052 §3.1). A failed write carries
+      `error.type`; the cut then retains rather than stamps.
+    note: >-
+      One counter for successes and failures, per the OTel
+      recording-errors convention.
+    instrument: counter
+    unit: "{write}"
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: recommended
+      - ref: error.type
+        requirement_level:
+          conditionally_required: If and only if the write failed.
+
+  - id: metric.ourios.ingest.barrier.epoch
+    type: metric
+    metric_name: ourios.ingest.barrier.epoch
+    stability: development
+    brief: The current barrier epoch (RFC 0052 §3.1).
+    instrument: gauge
+    unit: "{epoch}"
+
+  - id: metric.ourios.ingest.barrier.failed_epoch
+    type: metric
+    metric_name: ourios.ingest.barrier.failed_epoch
+    stability: development
+    brief: >-
+      The epoch the `cadence_failed` latch holds — every cut at or above
+      it is refused (RFC 0052 §3.1/§3.5). Not reported while the latch is
+      clear.
+    note: >-
+      Read beside `ourios.ingest.barrier.epoch`: a reported value means
+      the node reclaims nothing until a restart.
+    instrument: gauge
+    unit: "{epoch}"

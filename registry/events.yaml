@@ -115,6 +115,73 @@ groups:
       The WAL was truncated past a tenant's snapshot high-water mark
       (external mutation); templates first seen in the gap may re-mint —
       drift is observable via the RFC 0010 drift query.
+  # RFC 0052 (§3.1 barrier failures, §3.5 transitions). Each transition
+  # event is emitted exactly once at the edge it names, by the edge's one
+  # owner: rotation edges synchronously by the WAL coordinator, floor and
+  # latch edges by the receiver's timer task.
+  - id: event.ourios.receiver.wal.checkpoint.error
+    type: event
+    name: ourios.receiver.wal.checkpoint.error
+    stability: development
+    brief: >
+      The barrier's WAL checkpoint write failed; the previous mark stays
+      in force, so nothing past it is reclaimed until a later cut stamps.
+      No acknowledged data is lost — the WAL is durable.
+  - id: event.ourios.receiver.wal.idle_rotation.error
+    type: event
+    name: ourios.receiver.wal.idle_rotation.error
+    stability: development
+    brief: >
+      The barrier's discretionary idle rotation failed; the cut proceeds
+      against the open segment, which stays unreclaimable until it
+      rotates.
+  - id: event.ourios.receiver.wal.rotation.retrying
+    type: event
+    name: ourios.receiver.wal.rotation.retrying
+    stability: development
+    brief: >
+      A WAL rotation failed and entered the retrying state (RFC 0052
+      §3.3): the next append retries it within the
+      `rotation_retry_attempts` budget.
+  - id: event.ourios.receiver.wal.rotation.recovered
+    type: event
+    name: ourios.receiver.wal.rotation.recovered
+    stability: development
+    brief: >
+      A retried WAL rotation succeeded, leaving the retrying state
+      (RFC 0052 §3.3).
+  - id: event.ourios.receiver.wal.rotation.terminal
+    type: event
+    name: ourios.receiver.wal.rotation.terminal
+    stability: development
+    brief: >
+      The WAL rotation retry budget is spent and the rotation state is
+      terminal (RFC 0052 §3.3): appends are refused until a restart.
+      There is no matching leave event — the only exit is a restart,
+      which a fresh WAL cannot observe.
+  - id: event.ourios.receiver.wal.retain_floor.pinned
+    type: event
+    name: ourios.receiver.wal.retain_floor.pinned
+    stability: development
+    brief: >
+      The WAL's retain floor became pinned (RFC 0052 §3.2): a tenant has
+      no valid snapshot, so reclamation holds its oldest surviving frame.
+  - id: event.ourios.receiver.wal.retain_floor.lifted
+    type: event
+    name: ourios.receiver.wal.retain_floor.lifted
+    stability: development
+    brief: >
+      The WAL's retain floor is no longer pinned (RFC 0052 §3.2): every
+      tenant again has a valid snapshot horizon.
+  - id: event.ourios.receiver.barrier.latched
+    type: event
+    name: ourios.receiver.barrier.latched
+    stability: development
+    brief: >
+      The barrier's `cadence_failed` latch was set (RFC 0052 §3.1): a
+      publish or a barrier step unwound, every cut at or above the failed
+      epoch is refused, and nothing stamps or reclaims until a restart,
+      which replays the WAL. The message names the failed epoch.
   - id: event.ourios.receiver.tenant.divergence
     type: event
     name: ourios.receiver.tenant.divergence
