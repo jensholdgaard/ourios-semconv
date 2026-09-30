@@ -123,6 +123,12 @@ groups:
               brief: >-
                 An inline flush to keep total buffered bytes under the
                 hard ceiling (RFC0014.4) — indicates memory backpressure.
+            - id: barrier
+              value: "barrier"
+              stability: development
+              brief: >-
+                The RFC 0052 §3.1 publication barrier's cut published the
+                partitions it drained, before stamping the WAL checkpoint.
         stability: development
         brief: Why the record sink flushed a partition (RFC 0014 §3.2).
       - id: ourios.ingest.json.lenient

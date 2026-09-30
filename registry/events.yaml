@@ -124,14 +124,15 @@ groups:
     name: ourios.receiver.wal.checkpoint.error
     stability: development
     brief: >
-      The barrier's WAL checkpoint write failed; the previous mark stays
-      in force, so nothing past it is reclaimed until a later cut stamps.
-      No acknowledged data is lost — the WAL is durable.
+      The barrier's WAL checkpoint write failed; a later cut retries the
+      stamp. No acknowledged data is lost — the WAL is durable.
     note: >
-      `error.type` is `io` when the sidecar write or its fsync failed,
-      `non_monotonic` when the mark is below the current one, and
-      `no_reclamation_surface` when the journal exposes no checkpoint at
-      all.
+      `error.type` is `io` when any persistence step of the checkpoint
+      failed (arming it, the sidecar write, its fsync, the rename, or the
+      witness write after it), `non_monotonic` when the mark is below the
+      current one, and `no_reclamation_surface` when the journal exposes
+      no checkpoint at all. Which mark is in force after an `io` failure
+      depends on the step that failed.
     attributes:
       - ref: error.type
         requirement_level: required
