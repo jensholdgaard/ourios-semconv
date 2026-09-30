@@ -475,9 +475,11 @@ groups:
               stability: development
               brief: >-
                 A sink retained records, a publish registered before the
-                cut failed, or a snapshot write failed, so neither the
-                snapshots nor the mark moved; the next cut covers the
-                records.
+                cut failed, or a snapshot write failed, so the mark did
+                not move; the next cut covers the records. Snapshots are
+                written per tenant, so after a snapshot-write failure the
+                tenants written before it already hold the cut's horizon
+                and the rest keep their previous one.
             - id: latched
               value: "latched"
               stability: development
