@@ -107,6 +107,27 @@ groups:
     brief: >
       Writing a miner snapshot failed; the next start may replay more
       from the WAL.
+  - id: event.ourios.receiver.snapshot.discarded
+    type: event
+    name: ourios.receiver.snapshot.discarded
+    stability: development
+    brief: >
+      Startup recovery discarded a tenant's miner snapshot instead of
+      restoring it; the tenant's miner state is rebuilt from the WAL
+      frames that remain, and templates first seen in reclaimed frames
+      re-mint — drift is observable via the RFC 0010 drift query.
+    note: >
+      `error.type` names why: `unknown_version` (an artefact of another
+      format version, including every version-1 artefact after the
+      version-2 bump), `corrupt` (the payload does not decode), `empty`
+      (a zero-length artefact), `no_horizon` (it records no WAL
+      high-water, so it cannot suppress replay), `restore_failed` (the
+      decoded state was rejected by the miner), or `_OTHER`.
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.receiver.wal.truncated
     type: event
     name: ourios.receiver.wal.truncated
