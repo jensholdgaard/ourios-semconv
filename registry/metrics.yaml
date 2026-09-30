@@ -790,7 +790,9 @@ groups:
     stability: development
     brief: Barrier cuts run, by what each decided (RFC 0052 §3.1).
     note: >-
-      Only `stamped` advances the checkpoint. A run of `retained` means
+      `stamped` guarantees the checkpoint advanced; `checkpoint_failed`
+      may already have advanced it, depending on the step that failed,
+      and no other outcome does. A run of `retained` means
       the store is refusing writes; any `latched` means the
       `cadence_failed` latch is set and nothing stamps until a restart.
     instrument: counter
