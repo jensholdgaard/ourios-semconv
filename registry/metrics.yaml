@@ -635,8 +635,13 @@ groups:
     metric_name: ourios.wal.size
     stability: development
     brief: >-
-      On-disk bytes of every file under the WAL root: the segments plus
-      the checkpoint sidecar and the reclamation records beside them.
+      On-disk bytes of the regular files directly in the WAL root: the
+      segments plus the checkpoint sidecar and the reclamation records
+      beside them.
+    note: >-
+      A best-effort directory read: an entry that cannot be read is
+      skipped rather than failing the collection, so a sample can
+      undercount.
     instrument: updowncounter
     unit: "By"
 
