@@ -790,7 +790,10 @@ groups:
     stability: development
     brief: Barrier cuts run, by what each decided (RFC 0052 §3.1).
     note: >-
-      Only `stamped` advances the checkpoint. A run of `retained` means
+      `stamped` means the checkpoint advanced, or that the cut had no
+      mark to write; `checkpoint_failed` may already have advanced it,
+      depending on the step that failed; no other outcome advances it.
+      A run of `retained` means
       the store is refusing writes; any `latched` means the
       `cadence_failed` latch is set and nothing stamps until a restart.
     instrument: counter
@@ -818,8 +821,9 @@ groups:
     stability: development
     brief: >-
       WAL checkpoint writes the barrier attempted when stamping a cut's
-      mark (RFC 0052 §6.7). A failed write carries `error.type` and
-      leaves the previous mark in force, so nothing past it is reclaimed.
+      mark (RFC 0052 §6.7). A failed write carries `error.type`; which
+      mark is in force afterwards depends on the step that failed, and a
+      later cut retries the stamp.
     note: >-
       One counter for successes and failures, per the OTel
       recording-errors convention. A cut with no mark writes nothing and
