@@ -124,9 +124,18 @@ groups:
     name: ourios.receiver.wal.checkpoint.error
     stability: development
     brief: >
-      The barrier's WAL checkpoint write failed; the previous mark stays
-      in force, so nothing past it is reclaimed until a later cut stamps.
-      No acknowledged data is lost — the WAL is durable.
+      The barrier's WAL checkpoint write failed; a later cut retries the
+      stamp. No acknowledged data is lost — the WAL is durable.
+    note: >
+      `error.type` is `io` when any persistence step of the checkpoint
+      failed (arming it, the sidecar write, its fsync, the rename, or the
+      witness write after it), `non_monotonic` when the mark is below the
+      current one, and `no_reclamation_surface` when the journal exposes
+      no checkpoint at all. Which mark is in force after an `io` failure
+      depends on the step that failed.
+    attributes:
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.receiver.wal.idle_rotation.error
     type: event
     name: ourios.receiver.wal.idle_rotation.error
@@ -135,6 +144,15 @@ groups:
       The barrier's discretionary idle rotation failed; the cut proceeds
       against the open segment, which stays unreclaimable until it
       rotates.
+    note: >
+      `error.type` is the rotation step that first failed when the
+      failure is charged to the rotation budget — `close_sync`, `create`,
+      `header_sync`, `rename` or `parent_fsync`, as on
+      `ourios.receiver.wal.rotation.retrying` — `io` for any other I/O
+      failure of the rotation call, and `_OTHER` otherwise.
+    attributes:
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.receiver.wal.rotation.retrying
     type: event
     name: ourios.receiver.wal.rotation.retrying
@@ -143,6 +161,14 @@ groups:
       A WAL rotation failed and entered the retrying state (RFC 0052
       §3.3): the next append retries it within the
       `rotation_retry_attempts` budget.
+    note: >
+      `error.type` names the rotation step that first failed:
+      `close_sync`, `create`, `header_sync`, `rename` or `parent_fsync`
+      (the first failure's step, which the budget keeps as the
+      diagnosis).
+    attributes:
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.receiver.wal.rotation.recovered
     type: event
     name: ourios.receiver.wal.rotation.recovered
@@ -159,6 +185,12 @@ groups:
       terminal (RFC 0052 §3.3): appends are refused until a restart.
       There is no matching leave event — the only exit is a restart,
       which a fresh WAL cannot observe.
+    note: >
+      `error.type` names the rotation step whose failure exhausted the
+      budget, as on `ourios.receiver.wal.rotation.retrying`.
+    attributes:
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.receiver.wal.retain_floor.pinned
     type: event
     name: ourios.receiver.wal.retain_floor.pinned
@@ -182,6 +214,117 @@ groups:
       publish or a barrier step unwound, every cut at or above the failed
       epoch is refused, and nothing stamps or reclaims until a restart,
       which replays the WAL. The message names the failed epoch.
+  - id: event.ourios.receiver.wal.housekeeping.error
+    type: event
+    name: ourios.receiver.wal.housekeeping.error
+    stability: development
+    brief: >
+      A WAL housekeeping pass failed or panicked (RFC 0052 §3.2): nothing
+      past the pass's bound was unlinked, the checkpoint is untouched, and
+      the next pass retries — re-planning whatever an unwound pass left
+      uncommitted.
+    note: >
+      `error.type` is `cadence_panic` for an unwound pass (the value the
+      `ourios.sink.flush.errors` counter records for it); for a returned
+      error it is `io` (a record write, unlink or fsync failed),
+      `mode_disagreement` (the pass's consumer mode disagrees with the
+      recorded one), `unrecoverable` (a tenant's state cannot be told
+      apart from a loss) or `no_reclamation_surface` (the journal cannot
+      reclaim).
+    attributes:
+      - ref: error.type
+        requirement_level: required
+  - id: event.ourios.receiver.cadence.join.error
+    type: event
+    name: ourios.receiver.cadence.join.error
+    stability: development
+    brief: >
+      A cadence task (the barrier or the housekeeping timer) did not join
+      cleanly at shutdown (RFC 0052 §3.2). Read as a failed cut: the
+      latch takes the current epoch, nothing is stamped, and the WAL
+      replays the uncovered frames on the next start. The message names
+      the task.
+    note: >
+      `error.type` is `panic` or `cancelled`, from the join error.
+    attributes:
+      - ref: error.type
+        requirement_level: required
+  - id: event.ourios.receiver.publish.held
+    type: event
+    name: ourios.receiver.publish.held
+    stability: development
+    brief: >
+      A drain's records were held back and requeued because an earlier
+      drain's template events are not durable yet, so records never
+      publish ahead of their templates; the drain that carries both
+      publishes them.
+      Not a failure — no acknowledged data is lost.
+    attributes:
+      - ref: ourios.sink.flush.trigger
+        requirement_level: recommended
+  # Listener lifecycle (ourios-serving; RFC 0030 TLS listeners, #791's
+  # listener deadlines).
+  - id: event.ourios.server.listener.accept.error
+    type: event
+    name: ourios.server.listener.accept.error
+    stability: development
+    brief: >
+      Accepting a connection failed. A connection-level error (the peer
+      went away between SYN and accept) is retried at once; running out
+      of file descriptors, or any other error, backs the listener off
+      before the next accept.
+    note: >
+      `error.type` is `fd_exhausted` for `EMFILE`/`ENFILE`,
+      `connection_refused`, `connection_aborted` or `connection_reset`
+      for the connection-level errors, and `_OTHER` otherwise.
+    attributes:
+      - ref: error.type
+        requirement_level: required
+      - ref: ourios.server.listener.name
+        requirement_level: required
+  - id: event.ourios.server.listener.connection.error
+    type: event
+    name: ourios.server.listener.connection.error
+    stability: development
+    brief: >
+      An accepted HTTP connection ended with an error (a stalled or idle
+      peer cut off by the transport deadlines, a malformed request, a
+      reset) rather than a clean close.
+    note: >
+      `error.type` is `timeout`, `incomplete_message` or `_OTHER`.
+    attributes:
+      - ref: error.type
+        requirement_level: required
+      - ref: ourios.server.listener.name
+        requirement_level: required
+  - id: event.ourios.server.tls.reload.completed
+    type: event
+    name: ourios.server.tls.reload.completed
+    stability: development
+    brief: >
+      A TLS listener reloaded its certificate from disk after the
+      material changed (RFC 0030); new handshakes use it.
+    attributes:
+      - ref: ourios.server.listener.name
+        requirement_level: required
+  - id: event.ourios.server.tls.reload.error
+    type: event
+    name: ourios.server.tls.reload.error
+    stability: development
+    brief: >
+      A TLS certificate reload failed (RFC 0030); the listener keeps
+      serving the last good certificate and the next tick retries. The
+      message names the certificate, key and client-CA paths.
+    note: >
+      `error.type` is `unreadable` or `invalid` (the
+      `ourios.tls.reload_error` values the
+      `ourios.receiver.tls.reload_failures` counter records), or `panic`
+      when the reload task itself unwound.
+    attributes:
+      - ref: error.type
+        requirement_level: required
+      - ref: ourios.server.listener.name
+        requirement_level: required
   - id: event.ourios.receiver.tenant.divergence
     type: event
     name: ourios.receiver.tenant.divergence
