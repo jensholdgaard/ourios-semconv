@@ -288,7 +288,7 @@ groups:
       A TLS listener reloaded its certificate from disk after the
       material changed (RFC 0030); new handshakes use it.
     attributes:
-      - ref: ourios.tls.listener
+      - ref: ourios.server.listener.name
         requirement_level: required
   - id: event.ourios.server.tls.reload.error
     type: event
@@ -306,7 +306,7 @@ groups:
     attributes:
       - ref: error.type
         requirement_level: required
-      - ref: ourios.tls.listener
+      - ref: ourios.server.listener.name
         requirement_level: required
   - id: event.ourios.receiver.tenant.divergence
     type: event

@@ -366,11 +366,11 @@ groups:
         stability: development
         brief: >-
           Which of the server's listeners, TLS-terminating or plaintext,
-          an event occurred on.
+          a measurement or event belongs to.
         note: >-
-          `ourios.tls.listener` names the same listeners but only in the
-          TLS context of its handshake and reload counters; this one
-          covers the plaintext listeners too, such as an accept failure.
+          Replaces `ourios.tls.listener`, which named the same listeners
+          in the TLS context only; one attribute per concept keeps the
+          TLS counters and the listener events joinable.
 
       - id: ourios.tls.listener
         type:
@@ -388,6 +388,9 @@ groups:
               stability: development
               brief: The querier HTTP listener (RFC 0016 / RFC 0030 §3.1), serving /v1/query + /mcp.
         stability: development
+        deprecated:
+          reason: renamed
+          renamed_to: ourios.server.listener.name
         brief: Which TLS-terminating listener a handshake failure occurred on.
 
       - id: ourios.tls.failure

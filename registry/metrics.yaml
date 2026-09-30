@@ -538,7 +538,7 @@ groups:
     instrument: counter
     unit: "{failure}"
     attributes:
-      - ref: ourios.tls.listener
+      - ref: ourios.server.listener.name
         requirement_level: required
       - ref: ourios.tls.failure
         requirement_level: required
@@ -555,7 +555,7 @@ groups:
     instrument: counter
     unit: "{failure}"
     attributes:
-      - ref: ourios.tls.listener
+      - ref: ourios.server.listener.name
         requirement_level: required
       - ref: ourios.tls.reload_error
         requirement_level: required
