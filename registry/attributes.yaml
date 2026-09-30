@@ -496,6 +496,15 @@ groups:
                 exposes no reclamation surface, so no checkpoint was
                 written. Distinct from `stamped` so a missing
                 implementation never reads as a stamp.
+            - id: checkpoint_failed
+              value: "checkpoint_failed"
+              stability: development
+              brief: >-
+                The records and snapshots are durable, but the cut's WAL
+                checkpoint write failed; the failure's class is the
+                `error.type` on `ourios.ingest.barrier.checkpoint.writes`,
+                and which mark is in force depends on the step that
+                failed. A later cut retries the stamp.
         stability: development
         brief: >-
           What one barrier cut decided (RFC 0052 §3.1) — the
