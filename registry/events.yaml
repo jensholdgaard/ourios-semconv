@@ -128,8 +128,10 @@ groups:
       in force, so nothing past it is reclaimed until a later cut stamps.
       No acknowledged data is lost — the WAL is durable.
     note: >
-      `error.type` is `no_reclamation_surface` when the journal exposes no
-      checkpoint at all, otherwise the class of the failed write.
+      `error.type` is `io` when the sidecar write or its fsync failed,
+      `non_monotonic` when the mark is below the current one, and
+      `no_reclamation_surface` when the journal exposes no checkpoint at
+      all.
     attributes:
       - ref: error.type
         requirement_level: required
@@ -141,6 +143,12 @@ groups:
       The barrier's discretionary idle rotation failed; the cut proceeds
       against the open segment, which stays unreclaimable until it
       rotates.
+    note: >
+      `error.type` is the rotation step that first failed when the
+      failure is charged to the rotation budget — `close_sync`, `create`,
+      `header_sync`, `rename` or `parent_fsync`, as on
+      `ourios.receiver.wal.rotation.retrying` — `io` for any other I/O
+      failure of the rotation call, and `_OTHER` otherwise.
     attributes:
       - ref: error.type
         requirement_level: required
@@ -216,8 +224,12 @@ groups:
       uncommitted.
     note: >
       `error.type` is `cadence_panic` for an unwound pass (the value the
-      `ourios.sink.flush.errors` counter records for it), otherwise the
-      class of the returned reclamation error.
+      `ourios.sink.flush.errors` counter records for it); for a returned
+      error it is `io` (a record write, unlink or fsync failed),
+      `mode_disagreement` (the pass's consumer mode disagrees with the
+      recorded one), `unrecoverable` (a tenant's state cannot be told
+      apart from a loss) or `no_reclamation_surface` (the journal cannot
+      reclaim).
     attributes:
       - ref: error.type
         requirement_level: required
