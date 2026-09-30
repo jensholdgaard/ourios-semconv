@@ -634,7 +634,9 @@ groups:
     type: metric
     metric_name: ourios.wal.size
     stability: development
-    brief: On-disk bytes across every WAL segment file.
+    brief: >-
+      On-disk bytes of every file under the WAL root: the segments plus
+      the checkpoint sidecar and the reclamation records beside them.
     instrument: updowncounter
     unit: "By"
 
@@ -717,8 +719,14 @@ groups:
     metric_name: ourios.wal.retain_floor.lag.size
     stability: development
     brief: >-
-      Frame bytes in the segments the retain floor keeps below the
-      checkpoint (`lag_bytes`, RFC 0052 §3.5).
+      Frame bytes in the segments at least one tenant still holds back,
+      less the current append segment (`lag_bytes`, RFC 0052 §3.5).
+    note: >-
+      Conservative by construction: equal to the bytes the floor retains
+      below the checkpoint whenever the checkpoint covers every held
+      segment, and larger by the held post-checkpoint tail otherwise,
+      never smaller. Zero while no pass has derived a floor, or while no
+      tenant holds anything back.
     instrument: updowncounter
     unit: "By"
 
@@ -727,8 +735,13 @@ groups:
     metric_name: ourios.wal.retain_floor.lag.segment.count
     stability: development
     brief: >-
-      Segments the retain floor keeps below the checkpoint
-      (`lag_segments`, RFC 0052 §3.5).
+      Segments at least one tenant still holds back, less the current
+      append segment (`lag_segments`, RFC 0052 §3.5).
+    note: >-
+      Conservative by construction, like
+      `ourios.wal.retain_floor.lag.size`: it counts held segments past
+      the checkpoint as well, and is never smaller than the segments the
+      floor retains below it.
     instrument: updowncounter
     unit: "{segment}"
 
