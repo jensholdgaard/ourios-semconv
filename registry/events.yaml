@@ -153,9 +153,10 @@ groups:
       §3.3): the next append retries it within the
       `rotation_retry_attempts` budget.
     note: >
-      `error.type` names the rotation step that failed (`create`,
-      `fsync`, `rename`, ...): the first failure's step, which the budget
-      keeps as the diagnosis.
+      `error.type` names the rotation step that first failed:
+      `close_sync`, `create`, `header_sync`, `rename` or `parent_fsync`
+      (the first failure's step, which the budget keeps as the
+      diagnosis).
     attributes:
       - ref: error.type
         requirement_level: required
@@ -241,8 +242,9 @@ groups:
     stability: development
     brief: >
       A drain's records were held back and requeued because an earlier
-      drain's template events are not durable yetX
-      publication order); the drain that carries both publishes them.
+      drain's template events are not durable yet, so records never
+      publish ahead of their templates; the drain that carries both
+      publishes them.
       Not a failure — no acknowledged data is lost.
     attributes:
       - ref: ourios.sink.flush.trigger
