@@ -629,15 +629,18 @@ groups:
 
   # RFC 0052 §3.5 (RFC0052.7): the WAL's reclamation state. Every figure
   # is observed from the WAL's in-memory accounting (`WalMetrics`,
-  # `ReclaimState`), never from a directory inspection.
+  # `ReclaimState`), never from a directory inspection, except
+  # `ourios.wal.size` and `ourios.wal.segment.count`: those two come from
+  # a best-effort read of the WAL root, taken once per housekeeping
+  # observation, never on the append path or in an export callback.
   - id: metric.ourios.wal.size
     type: metric
     metric_name: ourios.wal.size
     stability: development
     brief: >-
-      On-disk bytes of the regular files directly in the WAL root: the
-      segments plus the checkpoint sidecar and the reclamation records
-      beside them.
+      On-disk bytes of every regular file directly in the WAL root,
+      including the segments, the checkpoint sidecar, the reclamation
+      records and any stale partial rotation file.
     note: >-
       A best-effort directory read: an entry that cannot be read is
       skipped rather than failing the collection, so a sample can
