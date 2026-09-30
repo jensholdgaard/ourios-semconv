@@ -348,6 +348,30 @@ groups:
           trailing `…`).
         examples: ["cluster2"]
 
+      - id: ourios.server.listener.name
+        type:
+          members:
+            - id: grpc
+              value: "grpc"
+              stability: development
+              brief: The OTLP gRPC receiver listener.
+            - id: http
+              value: "http"
+              stability: development
+              brief: The OTLP HTTP receiver listener.
+            - id: querier
+              value: "querier"
+              stability: development
+              brief: The querier HTTP listener, serving /v1/query + /mcp.
+        stability: development
+        brief: >-
+          Which of the server's listeners, TLS-terminating or plaintext,
+          an event occurred on.
+        note: >-
+          `ourios.tls.listener` names the same listeners but only in the
+          TLS context of its handshake and reload counters; this one
+          covers the plaintext listeners too, such as an accept failure.
+
       - id: ourios.tls.listener
         type:
           members:
@@ -455,6 +479,14 @@ groups:
               value: "idle"
               stability: development
               brief: A barrier tick found no cut pending.
+            - id: unstamped
+              value: "unstamped"
+              stability: development
+              brief: >-
+                The records and snapshots are durable, but the journal
+                exposes no reclamation surface, so no checkpoint was
+                written. Distinct from `stamped` so a missing
+                implementation never reads as a stamp.
         stability: development
         brief: >-
           What one barrier cut decided (RFC 0052 §3.1) — the
