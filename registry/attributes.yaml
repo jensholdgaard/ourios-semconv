@@ -59,6 +59,15 @@ groups:
               value: "template_ceiling"
               stability: development
               brief: The tenant is at `max_templates`; the would-mint line was diverted (RFC 0023 §3.1).
+            - id: id_reservation_failed
+              value: "id_reservation_failed"
+              stability: development
+              brief: >-
+                The line needed a new template id, but the node's reserved id
+                blocks were exhausted before the background refiller reserved
+                the next one (RFC 0059); no object-store write happens on the
+                ingest path. The line kept its body; lines reusing existing
+                templates are unaffected.
         stability: development
         brief: >-
           Why a line took the parse-failure path (the
@@ -435,6 +444,38 @@ groups:
           dimension). The listener keeps the last good certificate in
           both cases (RFC0030.6).
 
+      - id: ourios.receiver.template_ids.floor
+        type: int
+        stability: development
+        brief: >-
+          The durable template-id high-water the bootstrap seated
+          (RFC 0059): the highest id the data files, the audit stream and
+          the restored snapshots evidence. A provable floor, with no
+          safety margin.
+        examples: [1000042]
+      - id: ourios.receiver.template_ids.data_max
+        type: int
+        stability: development
+        brief: >-
+          The highest template id the bootstrap found in the data files'
+          footer statistics (every published row's id); absent when no
+          data file carries one.
+        examples: [41]
+      - id: ourios.receiver.template_ids.audit_max
+        type: int
+        stability: development
+        brief: >-
+          The highest template id the bootstrap found in the audit
+          stream's footer statistics (including alias id columns); absent
+          when no audit file carries one.
+        examples: [42]
+      - id: ourios.receiver.template_ids.files_scanned
+        type: int
+        stability: development
+        brief: >-
+          Data and audit files whose footers the template-id bootstrap
+          has read so far (RFC 0059).
+        examples: [10000, 620000]
       - id: ourios.template.id
         type: int
         stability: development
