@@ -59,6 +59,13 @@ groups:
               value: "template_ceiling"
               stability: development
               brief: The tenant is at `max_templates`; the would-mint line was diverted (RFC 0023 §3.1).
+            - id: id_reservation_failed
+              value: "id_reservation_failed"
+              stability: development
+              brief: >-
+                The line needed a new template id, but the node's reserved id
+                range was exhausted and the synchronous write reserving the
+                next block failed (RFC 0001 §6.9); the line kept its body.
         stability: development
         brief: >-
           Why a line took the parse-failure path (the
@@ -435,6 +442,22 @@ groups:
           dimension). The listener keeps the last good certificate in
           both cases (RFC0030.6).
 
+      - id: ourios.receiver.template_ids.floor
+        type: int
+        stability: development
+        brief: >-
+          The template id the bootstrap seated the durable id high-water
+          at (RFC 0001 §6.9): the highest id the audit stream and the
+          restored snapshots evidence, plus the safety margin.
+        examples: [1000042]
+      - id: ourios.receiver.template_ids.audit_max
+        type: int
+        stability: development
+        brief: >-
+          The highest template id the bootstrap found in the audit
+          stream's footer statistics, before the safety margin; absent
+          when the audit stream holds no template events.
+        examples: [42]
       - id: ourios.template.id
         type: int
         stability: development

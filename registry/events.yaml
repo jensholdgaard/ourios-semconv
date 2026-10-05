@@ -107,6 +107,25 @@ groups:
     brief: >
       Writing a miner snapshot failed; the next start may replay more
       from the WAL.
+  - id: event.ourios.receiver.template_ids.bootstrapped
+    type: event
+    name: ourios.receiver.template_ids.bootstrapped
+    stability: development
+    brief: >
+      Startup found no durable template-id high-water in the object
+      store and created one (RFC 0001 §6.9), once per store. Ids below
+      the floor are never issued again.
+    note: >
+      Emitted at most once per store, by the start that wins the
+      create-if-absent write. The floor carries a safety margin over the
+      evidenced maximum because structured templates and dropped audit
+      events leave no audit record.
+    attributes:
+      - ref: ourios.receiver.template_ids.floor
+        requirement_level: required
+      - ref: ourios.receiver.template_ids.audit_max
+        requirement_level:
+          conditionally_required: If the audit stream holds any template event.
   - id: event.ourios.receiver.snapshot.discarded
     type: event
     name: ourios.receiver.snapshot.discarded
