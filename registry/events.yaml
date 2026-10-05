@@ -158,7 +158,10 @@ groups:
       version-2 bump), `corrupt` (the payload does not decode), `empty`
       (a zero-length artefact), `no_horizon` (it records no WAL
       high-water, so it cannot suppress replay), `restore_failed` (the
-      decoded state was rejected by the miner), or `_OTHER`.
+      decoded state was rejected by the miner), `predates_high_water`
+      (the artefact was written before this root first seated above the
+      durable template-id high-water, so its ids may collide with ids
+      issued since; RFC 0059), or `_OTHER`.
     attributes:
       - ref: ourios.tenant
         requirement_level: required
