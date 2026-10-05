@@ -64,9 +64,10 @@ groups:
               stability: development
               brief: >-
                 The line needed a new template id, but the node's reserved id
-                range was exhausted and the synchronous write reserving the
-                next block had not completed (RFC 0059); the line kept its
-                body while the background refill retries.
+                blocks were exhausted before the background refiller reserved
+                the next one (RFC 0059); no object-store write happens on the
+                ingest path. The line kept its body; lines reusing existing
+                templates are unaffected.
         stability: development
         brief: >-
           Why a line took the parse-failure path (the
