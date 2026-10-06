@@ -114,12 +114,16 @@ groups:
     brief: >
       Startup found no durable template-id high-water in the object
       store, scanned every data and audit file footer for the highest
-      template id ever published, and created the high-water (RFC 0059),
-      once per store. Ids at or below the floor are never issued again.
+      template id still stored, and created the high-water (RFC 0059).
+      Ids at or below the floor are not issued again while this
+      high-water exists.
     note: >
-      Emitted at most once per store, by the start that wins the
-      create-if-absent write. The floor is provable: the data files'
-      footer statistics cover every published row's id.
+      Emitted once per successful creation of the high-water, by the
+      start that wins the create-if-absent write: at the first start of
+      a store, and again after each authorised re-bootstrap that
+      recreates a removed high-water. The floor is provable: the data
+      and audit files' footer statistics cover every id still bound by
+      stored data or audit.
     attributes:
       - ref: ourios.receiver.template_ids.floor
         requirement_level: required
