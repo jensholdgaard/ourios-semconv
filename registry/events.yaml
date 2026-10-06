@@ -142,16 +142,19 @@ groups:
     brief: >
       A background reservation of a template-id block from the durable
       high-water failed (RFC 0059). The refiller retries with capped
-      backoff; until a block lands, templates needing a fresh id fail
-      parse with reason `id_reservation_failed` and keep their body.
+      backoff. Blocks already held stay usable; only once they run out
+      do templates needing a fresh id fail parse with reason
+      `id_reservation_failed` (keeping their body) until a block lands.
     note: >
       Emitted once per failed attempt, at severity WARN. `error.type`
       names why: `store` (the object store call failed), `malformed`
       (the high-water object does not decode), `later_version` (it was
       written by a newer format version), `contended` (the
-      compare-and-swap lost every retry to other replicas), `exhausted`
-      (the id range is used up), `marker` (the local seated marker could
-      not be updated), or `_OTHER`.
+      compare-and-swap lost every retry to other replicas), `marker`
+      (the local seated marker could not be updated), or `_OTHER`.
+      Exhausting the id range is not a refill failure and does not emit
+      this event; it surfaces as parse failures with reason
+      `id_reservation_failed`.
     attributes:
       - ref: error.type
         requirement_level: required
