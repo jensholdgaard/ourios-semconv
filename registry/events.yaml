@@ -118,7 +118,7 @@ groups:
       Ids at or below the floor are not issued again while this
       high-water exists.
     note: >
-      Emitted once per successful creation of the high-water, by the
+      Emitted at most once per successful creation of the high-water, by the
       start that wins the create-if-absent write: at the first start of
       a store, and again after each authorised re-bootstrap that
       recreates a removed high-water. The floor is provable: the data
