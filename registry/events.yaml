@@ -135,6 +135,44 @@ groups:
           conditionally_required: If any audit file carries a template id.
       - ref: ourios.receiver.template_ids.files_scanned
         requirement_level: required
+  - id: event.ourios.receiver.template_ids.refill.failed
+    type: event
+    name: ourios.receiver.template_ids.refill.failed
+    stability: development
+    brief: >
+      A background reservation of a template-id block from the durable
+      high-water failed (RFC 0059). The refiller retries with capped
+      backoff. Blocks already held stay usable; only once they run out
+      do templates needing a fresh id fail parse with reason
+      `id_reservation_failed` (keeping their body) until a block lands.
+    note: >
+      Emitted once per failed attempt, at severity WARN. `error.type`
+      names why: `store` (the object store call failed), `malformed`
+      (the high-water object does not decode), `later_version` (it was
+      written by a newer format version), `contended` (the
+      compare-and-swap lost every retry to other replicas), `marker`
+      (the local seated marker could not be updated), or `_OTHER`.
+      Exhausting the id range is not a refill failure and does not emit
+      this event; it surfaces as parse failures with reason
+      `id_reservation_failed`.
+    attributes:
+      - ref: error.type
+        requirement_level: required
+  - id: event.ourios.receiver.template_ids.refill.stopped
+    type: event
+    name: ourios.receiver.template_ids.refill.stopped
+    stability: development
+    brief: >
+      The template-id refiller stopped for good because the durable
+      high-water was deleted under a running receiver (RFC 0059). Held
+      blocks are spent, then templates needing a fresh id fail parse
+      until a restart, which fails closed.
+    note: >
+      Emitted at most once per process, at severity ERROR. `error.type`
+      is `deleted`.
+    attributes:
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.receiver.template_ids.bootstrap.progress
     type: event
     name: ourios.receiver.template_ids.bootstrap.progress
