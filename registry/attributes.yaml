@@ -274,17 +274,20 @@ groups:
               value: "memory_hit"
               stability: development
               brief: >-
-                The querier's in-memory map for the tenant was derived at
+                The querier's in-memory map for the tenant was acquired at
                 a frontier equal to the live audit listing — served from
                 memory, zero GETs (not even the artifact).
             - id: joined
               value: "joined"
               stability: development
               brief: >-
-                Another query was already deriving the map at the same
-                frontier; this query waited for that single derive and
-                was served its map. A derive that fails records no
-                outcome, for the deriving query or its waiters.
+                Another query was already acquiring the map at the same
+                frontier (reading the artifact or folding the audit
+                history); this query waited for that single shared
+                acquisition and was served its map. The acquiring query
+                records its own outcome (`hit`, `miss`, `stale`, ...). An
+                acquisition that fails records no outcome, for the
+                acquiring query or its waiters.
         stability: development
         brief: >-
           The outcome of a cached template-map lookup (RFC 0033 §3.3).
