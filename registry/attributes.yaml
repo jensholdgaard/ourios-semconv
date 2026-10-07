@@ -270,6 +270,20 @@ groups:
                 A future writer's `format_version` — treated as absent
                 (forward compatibility), republished at this reader's
                 version.
+            - id: memory_hit
+              value: "memory_hit"
+              stability: development
+              brief: >-
+                The querier's in-memory map for the tenant was derived at
+                a frontier equal to the live audit listing — served from
+                memory, zero GETs (not even the artifact).
+            - id: joined
+              value: "joined"
+              stability: development
+              brief: >-
+                Another query was already deriving the map at the same
+                frontier; this query waited for that single derive and
+                was served its result (or its error).
         stability: development
         brief: >-
           The outcome of a cached template-map lookup (RFC 0033 §3.3).
