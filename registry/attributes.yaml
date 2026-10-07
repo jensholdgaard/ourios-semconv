@@ -283,7 +283,8 @@ groups:
               brief: >-
                 Another query was already deriving the map at the same
                 frontier; this query waited for that single derive and
-                was served its result (or its error).
+                was served its map. A derive that fails records no
+                outcome, for the deriving query or its waiters.
         stability: development
         brief: >-
           The outcome of a cached template-map lookup (RFC 0033 §3.3).
