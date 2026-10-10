@@ -152,6 +152,19 @@ groups:
           signal that spec-valid-but-upstream-rejected payloads (empty
           `AnyValue` encodings) are arriving, and the attribute goes
           away with the upstream fix.
+      - id: ourios.template_map.derive.reason
+        type:
+          members:
+            - {id: miss, value: "miss", stability: development, brief: "No artifact under the tenant's audit root."}
+            - {id: stale, value: "stale", stability: development, brief: "A valid artifact at a different audit frontier."}
+            - {id: torn, value: "torn", stability: development, brief: "An unreadable, unparseable or internally invalid artifact."}
+            - {id: unknown_version, value: "unknown_version", stability: development, brief: "An artifact written by a future format version."}
+        stability: development
+        brief: >-
+          Why a template-map derive (a fold over the tenant's audit history)
+          ran. Known before the fold starts, so it is set on failed derives
+          too, unlike `ourios.template_map.lookup.outcome`, which only
+          successful lookups carry.
       - id: ourios.storage.operation
         type:
           members:

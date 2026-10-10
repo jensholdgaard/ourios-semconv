@@ -924,12 +924,18 @@ groups:
     stability: development
     brief: >-
       Retries the object-store client made inside logical operations (#923). A rising rate separates slow-because-retrying from slow-because-large.
+    note: >-
+      One increment per retried attempt. `error.type` classifies the failed
+      attempt that triggered that retry (e.g. `timeout`, or the HTTP status
+      code such as `500`), not the logical operation's final outcome.
     instrument: counter
     unit: "{retry}"
     attributes:
       - ref: ourios.storage.operation
         requirement_level: required
       - ref: ourios.storage.caller
+        requirement_level: required
+      - ref: error.type
         requirement_level: required
 
   - id: metric.ourios.storage.list.objects
@@ -1013,11 +1019,11 @@ groups:
     brief: >-
       Duration of one template-map derive: a fold over the tenant's audit history (#924).
     note: >-
-      `ourios.template_map.lookup.outcome` names why the derive ran (`miss`, `stale`, `torn`, `unknown_version`).
+      `ourios.template_map.derive.reason` names why the derive ran; it is known before the fold, so failed derives carry it too.
     instrument: histogram
     unit: "s"
     attributes:
-      - ref: ourios.template_map.lookup.outcome
+      - ref: ourios.template_map.derive.reason
         requirement_level: required
       - ref: error.type
         requirement_level: 
@@ -1032,7 +1038,7 @@ groups:
     instrument: histogram
     unit: "{file}"
     attributes:
-      - ref: ourios.template_map.lookup.outcome
+      - ref: ourios.template_map.derive.reason
         requirement_level: required
 
   - id: metric.ourios.template_map.derive.audit.size
@@ -1044,7 +1050,7 @@ groups:
     instrument: histogram
     unit: "By"
     attributes:
-      - ref: ourios.template_map.lookup.outcome
+      - ref: ourios.template_map.derive.reason
         requirement_level: required
 
   - id: metric.ourios.template_map.acquire.wait.duration
