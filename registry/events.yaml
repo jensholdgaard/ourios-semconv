@@ -178,9 +178,9 @@ groups:
     name: ourios.receiver.template_ids.bootstrap.progress
     stability: development
     brief: >
-      The one-time template-id bootstrap scan (RFC 0059) has read
-      another batch of data and audit file footers; emitted every
-      10,000 files so a long first start on a large store shows
+      The template-id bootstrap scan (RFC 0059) has read another batch
+      of data and audit file footers; emitted every 10,000 files and
+      at least every 30 s, so a long first start on a large store shows
       progress.
     attributes:
       - ref: ourios.receiver.template_ids.files_scanned
