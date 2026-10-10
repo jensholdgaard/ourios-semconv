@@ -900,3 +900,254 @@ groups:
       the node reclaims nothing until a restart.
     instrument: gauge
     unit: "{epoch}"
+
+  - id: metric.ourios.storage.operation.duration
+    type: metric
+    metric_name: ourios.storage.operation.duration
+    stability: development
+    brief: >-
+      Duration of one logical object-store operation, including every retry (#923).
+    instrument: histogram
+    unit: "s"
+    attributes:
+      - ref: ourios.storage.operation
+        requirement_level: required
+      - ref: ourios.storage.caller
+        requirement_level: required
+      - ref: error.type
+        requirement_level: 
+          conditionally_required: If the operation failed.
+
+  - id: metric.ourios.storage.operation.retries
+    type: metric
+    metric_name: ourios.storage.operation.retries
+    stability: development
+    brief: >-
+      Retries the object-store client made inside logical operations (#923). A rising rate separates slow-because-retrying from slow-because-large.
+    instrument: counter
+    unit: "{retry}"
+    attributes:
+      - ref: ourios.storage.operation
+        requirement_level: required
+      - ref: ourios.storage.caller
+        requirement_level: required
+
+  - id: metric.ourios.storage.list.objects
+    type: metric
+    metric_name: ourios.storage.list.objects
+    stability: development
+    brief: >-
+      Objects returned by one logical LIST (#923); a large value is the per-query whole-prefix listing of #853.
+    instrument: histogram
+    unit: "{object}"
+    attributes:
+      - ref: ourios.storage.caller
+        requirement_level: required
+
+  - id: metric.ourios.storage.bridge.call.active
+    type: metric
+    metric_name: ourios.storage.bridge.call.active
+    stability: development
+    brief: >-
+      Object-store calls currently bridged off the async runtime (#926).
+    instrument: updowncounter
+    unit: "{call}"
+
+  - id: metric.ourios.storage.bridge.duration
+    type: metric
+    metric_name: ourios.storage.bridge.duration
+    stability: development
+    brief: >-
+      Duration of one bridged object-store call (#926).
+    instrument: histogram
+    unit: "s"
+    attributes:
+      - ref: ourios.storage.operation
+        requirement_level: required
+      - ref: error.type
+        requirement_level: 
+          conditionally_required: If the call failed.
+
+  - id: metric.ourios.storage.bridge.thread.created
+    type: metric
+    metric_name: ourios.storage.bridge.thread.created
+    stability: development
+    brief: >-
+      OS threads the blocking bridge created (#926). Flat when the bridge reuses threads; a rising rate is the #853 thread-explosion signature.
+    instrument: counter
+    unit: "{thread}"
+
+  - id: metric.ourios.runtime.worker.count
+    type: metric
+    metric_name: ourios.runtime.worker.count
+    stability: development
+    brief: >-
+      Worker threads of the Ourios async runtime (#926).
+    note: >-
+      An Ourios-scoped runtime metric: OpenTelemetry defines no cross-runtime metric, and Ourios does not own a `tokio.*` namespace.
+    instrument: updowncounter
+    unit: "{worker}"
+
+  - id: metric.ourios.runtime.task.count
+    type: metric
+    metric_name: ourios.runtime.task.count
+    stability: development
+    brief: >-
+      Tasks currently alive on the Ourios async runtime (#926).
+    instrument: updowncounter
+    unit: "{task}"
+
+  - id: metric.ourios.runtime.global_queue.size
+    type: metric
+    metric_name: ourios.runtime.global_queue.size
+    stability: development
+    brief: >-
+      Tasks waiting in the async runtime's global injection queue (#926); a growing value is a starved runtime.
+    instrument: updowncounter
+    unit: "{task}"
+
+  - id: metric.ourios.template_map.derive.duration
+    type: metric
+    metric_name: ourios.template_map.derive.duration
+    stability: development
+    brief: >-
+      Duration of one template-map derive: a fold over the tenant's audit history (#924).
+    note: >-
+      `ourios.template_map.lookup.outcome` names why the derive ran (`miss`, `stale`, `torn`, `unknown_version`).
+    instrument: histogram
+    unit: "s"
+    attributes:
+      - ref: ourios.template_map.lookup.outcome
+        requirement_level: required
+      - ref: error.type
+        requirement_level: 
+          conditionally_required: If the derive failed.
+
+  - id: metric.ourios.template_map.derive.audit.files
+    type: metric
+    metric_name: ourios.template_map.derive.audit.files
+    stability: development
+    brief: >-
+      Audit files one template-map derive read (#924); tracks audit-history growth (#897).
+    instrument: histogram
+    unit: "{file}"
+    attributes:
+      - ref: ourios.template_map.lookup.outcome
+        requirement_level: required
+
+  - id: metric.ourios.template_map.derive.audit.size
+    type: metric
+    metric_name: ourios.template_map.derive.audit.size
+    stability: development
+    brief: >-
+      Audit bytes one template-map derive read (#924).
+    instrument: histogram
+    unit: "By"
+    attributes:
+      - ref: ourios.template_map.lookup.outcome
+        requirement_level: required
+
+  - id: metric.ourios.template_map.acquire.wait.duration
+    type: metric
+    metric_name: ourios.template_map.acquire.wait.duration
+    stability: development
+    brief: >-
+      Time a query waited on another query's template-map acquisition (#924); recorded only for joiners (lookup outcome `joined`).
+    instrument: histogram
+    unit: "s"
+
+  - id: metric.ourios.query.files
+    type: metric
+    metric_name: ourios.query.files
+    stability: development
+    brief: >-
+      Parquet files a query opened (#924).
+    instrument: histogram
+    unit: "{file}"
+    attributes:
+      - ref: ourios.query.kind
+        requirement_level: required
+
+  - id: metric.ourios.query.read.size
+    type: metric
+    metric_name: ourios.query.read.size
+    stability: development
+    brief: >-
+      Bytes a query fetched from storage (#924).
+    instrument: histogram
+    unit: "By"
+    attributes:
+      - ref: ourios.query.kind
+        requirement_level: required
+
+  - id: metric.ourios.compaction.partition.input.files
+    type: metric
+    metric_name: ourios.compaction.partition.input.files
+    stability: development
+    brief: >-
+      Input files of one compacted partition (#925); the small-file shape.
+    instrument: histogram
+    unit: "{file}"
+
+  - id: metric.ourios.compaction.partition.input.size
+    type: metric
+    metric_name: ourios.compaction.partition.input.size
+    stability: development
+    brief: >-
+      Input size of one compacted partition (#925).
+    instrument: histogram
+    unit: "By"
+    attributes:
+      - ref: ourios.compaction.size.kind
+        requirement_level: required
+
+  - id: metric.ourios.compaction.spill.runs
+    type: metric
+    metric_name: ourios.compaction.spill.runs
+    stability: development
+    brief: >-
+      Sorted runs compaction spilled to local disk (#925); how often the memory budget is hit.
+    instrument: counter
+    unit: "{run}"
+
+  - id: metric.ourios.compaction.spill.size
+    type: metric
+    metric_name: ourios.compaction.spill.size
+    stability: development
+    brief: >-
+      Bytes compaction spilled to local disk (#925).
+    instrument: counter
+    unit: "By"
+
+  - id: metric.ourios.compaction.memory.usage
+    type: metric
+    metric_name: ourios.compaction.memory.usage
+    stability: development
+    brief: >-
+      Bytes compaction currently tracks against its memory budget, by phase (#925).
+    instrument: updowncounter
+    unit: "By"
+    attributes:
+      - ref: ourios.compaction.phase
+        requirement_level: required
+
+  - id: metric.ourios.compaction.memory.limit
+    type: metric
+    metric_name: ourios.compaction.memory.limit
+    stability: development
+    brief: >-
+      Compaction's configured memory budget, by phase (#925), so usage/limit can be graphed and alerted on.
+    instrument: updowncounter
+    unit: "By"
+    attributes:
+      - ref: ourios.compaction.phase
+        requirement_level: required
+
+  - id: metric.ourios.compaction.sweep.remaining
+    type: metric
+    metric_name: ourios.compaction.sweep.remaining
+    stability: development
+    brief: >-
+      Candidate partitions not yet processed in the running compaction sweep (#925); zero between sweeps.
+    instrument: updowncounter
+    unit: "{partition}"
