@@ -600,6 +600,9 @@ groups:
     attributes:
       - ref: ourios.template_map.lookup.outcome
         requirement_level: required
+      - ref: ourios.template_map.lookup.anomaly
+        requirement_level:
+          conditionally_required: If the fold behind the lookup detected one.
 
   - id: metric.ourios.template_map.publishes
     type: metric

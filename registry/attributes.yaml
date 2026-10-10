@@ -293,6 +293,28 @@ groups:
           The outcome of a cached template-map lookup (RFC 0033 §3.3).
           Every outcome answers the query correctly — the dimension
           distinguishes what IO paid for it, never what was served.
+      - id: ourios.template_map.lookup.anomaly
+        type:
+          members:
+            - id: binding_conflict
+              value: "binding_conflict"
+              stability: development
+              brief: >-
+                The fold found at least one `(template_id, version)` bound to
+                two semantically different templates (different parsed token
+                sequences). The served map keeps the last-wins binding; rows
+                carrying that pair may render against the wrong template
+                (CLAUDE.md §3.1, ourios#927).
+        stability: development
+        brief: >-
+          An integrity anomaly the template-map fold behind this lookup
+          detected. Absent when none was found. Orthogonal to
+          `ourios.template_map.lookup.outcome`: a lookup with an anomaly
+          still answered, so this is not `error.type`.
+        note: >-
+          Only a lookup that folded the audit stream (outcome `miss`,
+          `stale`, `torn` or `unknown_version`) can carry it; an artifact
+          `hit` runs no fold.
       - id: ourios.template_map.publish.outcome
         type:
           members:

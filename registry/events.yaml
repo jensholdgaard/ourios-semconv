@@ -461,3 +461,24 @@ groups:
     brief: >
       The tenant divergence watch reached `receiver.tenant.watch_capacity`;
       further (tenant, key) pairs are not watched. Emitted once per process.
+  - id: event.ourios.template_map.binding.conflicted
+    type: event
+    name: ourios.template_map.binding.conflicted
+    stability: development
+    brief: >
+      A tenant's template-map fold found two semantically different
+      templates (different parsed token sequences) bound to one
+      `(template_id, version)` (ourios#927, RFC 0033 §3.2). The served map
+      keeps the last-wins binding unchanged; rows carrying this pair may
+      render against the wrong template (CLAUDE.md §3.1).
+    note: >
+      Emitted at most once per conflicting pair per fold-backed
+      acquisition, at severity WARN. Template texts are never attached:
+      they can contain user data.
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
+      - ref: ourios.template.id
+        requirement_level: required
+      - ref: ourios.template.version
+        requirement_level: required
