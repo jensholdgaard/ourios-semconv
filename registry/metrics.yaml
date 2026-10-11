@@ -1157,3 +1157,150 @@ groups:
       Candidate partitions not yet processed in the running compaction sweep (#925); zero between sweeps.
     instrument: updowncounter
     unit: "{partition}"
+
+  # CI fuzz-run metrics (ourios#942): one data point per target per run,
+  # exported over OTLP by the ourios `fuzz.yml` workflow from libFuzzer's
+  # last status line and its `-print_final_stats=1` output. Not emitted by
+  # the Ourios binary.
+
+  - id: metric.ourios.fuzz.runs
+    type: metric
+    metric_name: ourios.fuzz.runs
+    stability: development
+    brief: Fuzz run attempts, by target and outcome.
+    note: |
+      Incremented once per attempted run, whether or not the fuzzer
+      started: `ourios.fuzz.result` `error` (the target did not build or
+      the fuzzer never started) and `cancelled` are attempts too. The
+      per-run measurements (coverage, feature and corpus gauges, execution
+      rate, peak memory, executions) are recorded only for runs that
+      started, so a missing data point there is not a zero.
+
+      This counter is also the findings signal: there is no separate
+      crash or timeout event. A finding is a data point with
+      `ourios.fuzz.result` `crash`, `timeout`, `oom` or `leak`, and the
+      commit it was found on comes from the `vcs.ref.head.revision`
+      resource attribute. Alerts key on this counter.
+    instrument: counter
+    unit: "{run}"
+    attributes:
+      - ref: ourios.fuzz.target
+        requirement_level: required
+      - ref: ourios.fuzz.result
+        requirement_level: required
+
+  - id: metric.ourios.fuzz.coverage
+    type: metric
+    metric_name: ourios.fuzz.coverage
+    stability: development
+    brief: Code edges the corpus covers at the end of the run (libFuzzer `cov`).
+    instrument: gauge
+    unit: "{edge}"
+    attributes:
+      - ref: ourios.fuzz.target
+        requirement_level: required
+      - ref: ourios.fuzz.result
+        requirement_level: recommended
+
+  - id: metric.ourios.fuzz.feature.count
+    type: metric
+    metric_name: ourios.fuzz.feature.count
+    stability: development
+    brief: Coverage features the corpus reaches at the end of the run (libFuzzer `ft`).
+    instrument: gauge
+    unit: "{feature}"
+    attributes:
+      - ref: ourios.fuzz.target
+        requirement_level: required
+      - ref: ourios.fuzz.result
+        requirement_level: recommended
+
+  - id: metric.ourios.fuzz.corpus.input.count
+    type: metric
+    metric_name: ourios.fuzz.corpus.input.count
+    stability: development
+    brief: Inputs in the working corpus at the end of the run (libFuzzer `corp`).
+    instrument: gauge
+    unit: "{input}"
+    attributes:
+      - ref: ourios.fuzz.target
+        requirement_level: required
+      - ref: ourios.fuzz.result
+        requirement_level: recommended
+
+  - id: metric.ourios.fuzz.corpus.size
+    type: metric
+    metric_name: ourios.fuzz.corpus.size
+    stability: development
+    brief: Total size of the working corpus at the end of the run (libFuzzer `corp`).
+    instrument: gauge
+    unit: "By"
+    attributes:
+      - ref: ourios.fuzz.target
+        requirement_level: required
+      - ref: ourios.fuzz.result
+        requirement_level: recommended
+
+  - id: metric.ourios.fuzz.executions
+    type: metric
+    metric_name: ourios.fuzz.executions
+    stability: development
+    brief: Inputs the target executed during the run (libFuzzer `stat::number_of_executed_units`).
+    instrument: counter
+    unit: "{execution}"
+    attributes:
+      - ref: ourios.fuzz.target
+        requirement_level: required
+      - ref: ourios.fuzz.result
+        requirement_level: recommended
+
+  - id: metric.ourios.fuzz.execution.rate
+    type: metric
+    metric_name: ourios.fuzz.execution.rate
+    stability: development
+    brief: Average executions per second over the run (libFuzzer `stat::average_exec_per_sec`).
+    instrument: gauge
+    unit: "{execution}/s"
+    attributes:
+      - ref: ourios.fuzz.target
+        requirement_level: required
+      - ref: ourios.fuzz.result
+        requirement_level: recommended
+
+  - id: metric.ourios.fuzz.memory.peak
+    type: metric
+    metric_name: ourios.fuzz.memory.peak
+    stability: development
+    brief: Peak resident set size of the fuzzing process (libFuzzer `stat::peak_rss_mb`).
+    instrument: gauge
+    unit: "By"
+    attributes:
+      - ref: ourios.fuzz.target
+        requirement_level: required
+      - ref: ourios.fuzz.result
+        requirement_level: recommended
+
+  - id: metric.ourios.fuzz.run.duration
+    type: metric
+    metric_name: ourios.fuzz.run.duration
+    stability: development
+    brief: Wall-clock duration of the fuzzing run, excluding the target build.
+    instrument: histogram
+    unit: "s"
+    attributes:
+      - ref: ourios.fuzz.target
+        requirement_level: required
+      - ref: ourios.fuzz.result
+        requirement_level: required
+
+  - id: metric.ourios.fuzz.run.budget
+    type: metric
+    metric_name: ourios.fuzz.run.budget
+    stability: development
+    brief: >-
+      The run's configured time budget (libFuzzer `-max_total_time`), to compare the duration against.
+    instrument: gauge
+    unit: "s"
+    attributes:
+      - ref: ourios.fuzz.target
+        requirement_level: required
