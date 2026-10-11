@@ -856,5 +856,11 @@ groups:
               brief: The CI job was cancelled before the run finished.
         stability: development
         brief: >-
-          The outcome of a fuzz run. Open-ended: consumers must accept
-          values not listed here.
+          The outcome of a fuzz run attempt. Open-ended: consumers must
+          accept values not listed here.
+        note: |
+          On `ourios.fuzz.runs` this attribute carries the findings: a
+          `crash`, `timeout`, `oom` or `leak` data point (with the commit
+          from the `vcs.ref.head.revision` resource attribute) replaces a
+          separate finding event. `error` and `cancelled` mark attempts
+          that did not run to the end of their budget.

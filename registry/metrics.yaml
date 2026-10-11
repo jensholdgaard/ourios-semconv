@@ -1167,7 +1167,20 @@ groups:
     type: metric
     metric_name: ourios.fuzz.runs
     stability: development
-    brief: Fuzz runs completed, by target and outcome.
+    brief: Fuzz run attempts, by target and outcome.
+    note: |
+      Incremented once per attempted run, whether or not the fuzzer
+      started: `ourios.fuzz.result` `error` (the target did not build or
+      the fuzzer never started) and `cancelled` are attempts too. The
+      per-run measurements (coverage, feature and corpus gauges, execution
+      rate, peak memory, executions) are recorded only for runs that
+      started, so a missing data point there is not a zero.
+
+      This counter is also the findings signal: there is no separate
+      crash or timeout event. A finding is a data point with
+      `ourios.fuzz.result` `crash`, `timeout`, `oom` or `leak`, and the
+      commit it was found on comes from the `vcs.ref.head.revision`
+      resource attribute. Alerts key on this counter.
     instrument: counter
     unit: "{run}"
     attributes:
