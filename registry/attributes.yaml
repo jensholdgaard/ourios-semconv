@@ -803,3 +803,58 @@ groups:
           Reported as a raw count alongside `row_groups_pruned`, never as
           a ratio (undefined when `matched == 0`); a consumer derives the
           ratio if it wants one.
+
+  # CI fuzz-run telemetry (ourios#942): emitted by the ourios `fuzz.yml`
+  # workflow's export step, not by the Ourios binary. The run itself is
+  # described with upstream `cicd.*` / `vcs.*` resource attributes; these
+  # two name what upstream has no convention for (no fuzzing namespace
+  # exists upstream, OTel MCP consultation 2026-10-11).
+  - id: registry.ourios.fuzz
+    type: attribute_group
+    display_name: Ourios fuzzing attributes
+    brief: Attributes on the CI fuzz-run metrics.
+    attributes:
+      - id: ourios.fuzz.target
+        type: string
+        stability: development
+        brief: The cargo-fuzz target the run exercised.
+        examples: ["miner_roundtrip", "otlp_json"]
+      - id: ourios.fuzz.result
+        type:
+          members:
+            - id: ok
+              value: "ok"
+              stability: development
+              brief: The run used its whole time budget without a finding.
+            - id: crash
+              value: "crash"
+              stability: development
+              brief: >-
+                The target crashed: a panic, a deadly signal, or a sanitizer
+                report other than a leak.
+            - id: timeout
+              value: "timeout"
+              stability: development
+              brief: A single input ran longer than libFuzzer's per-input timeout.
+            - id: oom
+              value: "oom"
+              stability: development
+              brief: An input exceeded libFuzzer's RSS limit.
+            - id: leak
+              value: "leak"
+              stability: development
+              brief: LeakSanitizer reported a leak.
+            - id: error
+              value: "error"
+              stability: development
+              brief: >-
+                The run failed without a finding, for example because the
+                target did not build or the fuzzer never started.
+            - id: cancelled
+              value: "cancelled"
+              stability: development
+              brief: The CI job was cancelled before the run finished.
+        stability: development
+        brief: >-
+          The outcome of a fuzz run. Open-ended: consumers must accept
+          values not listed here.
