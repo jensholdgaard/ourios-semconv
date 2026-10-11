@@ -1026,7 +1026,8 @@ groups:
       - ref: ourios.template_map.derive.reason
         requirement_level: required
       - ref: ourios.template_map.derive.mode
-        requirement_level: required
+        requirement_level:
+          conditionally_required: Once the fold path is decided; absent only on a `stale` derive that failed before the guard decided.
       - ref: ourios.template_map.derive.fallback.reason
         requirement_level:
           conditionally_required: If `ourios.template_map.derive.reason` is `stale` and `ourios.template_map.derive.mode` is `full`.
@@ -1046,7 +1047,8 @@ groups:
       - ref: ourios.template_map.derive.reason
         requirement_level: required
       - ref: ourios.template_map.derive.mode
-        requirement_level: required
+        requirement_level:
+          conditionally_required: Once the fold path is decided; absent only on a `stale` derive that failed before the guard decided.
       - ref: ourios.template_map.derive.fallback.reason
         requirement_level:
           conditionally_required: If `ourios.template_map.derive.reason` is `stale` and `ourios.template_map.derive.mode` is `full`.
@@ -1063,7 +1065,8 @@ groups:
       - ref: ourios.template_map.derive.reason
         requirement_level: required
       - ref: ourios.template_map.derive.mode
-        requirement_level: required
+        requirement_level:
+          conditionally_required: Once the fold path is decided; absent only on a `stale` derive that failed before the guard decided.
       - ref: ourios.template_map.derive.fallback.reason
         requirement_level:
           conditionally_required: If `ourios.template_map.derive.reason` is `stale` and `ourios.template_map.derive.mode` is `full`.

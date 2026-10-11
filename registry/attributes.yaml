@@ -176,7 +176,8 @@ groups:
           after the new audit files are read, so it is separate from
           `ourios.template_map.derive.reason`, which is known before the
           fold starts. A miss, torn or unknown-version derive is always
-          `full`.
+          `full`; a `stale` derive that fails before the incremental guard
+          decides carries no mode.
       - id: ourios.template_map.derive.fallback.reason
         type:
           members:
