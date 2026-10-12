@@ -189,6 +189,28 @@ groups:
         brief: >-
           Why a stale template-map derive fell back from an incremental to a
           full fold.
+      - id: ourios.file_set.list_request_count
+        type: int
+        stability: development
+        brief: Store listing calls made by one file-set resolution.
+        examples: [3]
+      - id: ourios.file_set.listed_objects
+        type: int
+        stability: development
+        brief: >-
+          Objects returned across a file-set resolution's listing calls,
+          before window and manifest filtering.
+        examples: [1200]
+      - id: ourios.file_set.manifest_read_count
+        type: int
+        stability: development
+        brief: Manifest reads made by one file-set resolution.
+        examples: [24]
+      - id: ourios.file_set.live_files
+        type: int
+        stability: development
+        brief: Live data files a file-set resolution hands to the scan.
+        examples: [180]
       - id: ourios.storage.operation
         type:
           members:
