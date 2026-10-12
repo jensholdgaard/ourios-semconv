@@ -313,6 +313,40 @@ groups:
         brief: >-
           Which branch of the RFC 0047 §3.4 two-step a query took inside its
           tenant. Absent when no graph resolver is configured.
+      - id: ourios.file_set.list_request_count
+        type: int
+        stability: development
+        brief: >-
+          Store listing calls the query's `resolve files` phase made
+          (RFC 0038 §3.7.2): each `list_*` call on the `Store`, or each
+          directory read on the local walk.
+        note: >-
+          Not HTTP pages — one `Store` listing call can take several
+          `ListObjectsV2` requests, and those appear as separate `CLIENT`
+          spans. A call that returned an error still counts.
+        examples: [1, 24]
+      - id: ourios.file_set.listed_objects
+        type: int
+        stability: development
+        brief: >-
+          Objects the `resolve files` phase's listing returned, before the
+          manifest and window rules selected the live set.
+        examples: [0, 1430]
+      - id: ourios.file_set.manifest_read_count
+        type: int
+        stability: development
+        brief: >-
+          Per-partition `manifest.json` reads the `resolve files` phase made
+          (RFC 0009 §3.4). An absent manifest still counts as a read.
+        examples: [0, 12]
+      - id: ourios.file_set.live_files
+        type: int
+        stability: development
+        brief: >-
+          Data files the `resolve files` phase resolved as live — what the
+          scan will open. `0` when the tenant has nothing queryable, which
+          ends the query without a scan.
+        examples: [0, 140]
       - id: ourios.template_map.lookup.outcome
         type:
           members:
