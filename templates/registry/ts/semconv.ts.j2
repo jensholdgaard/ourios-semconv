@@ -15,10 +15,21 @@
 /** The semantic-conventions schema URL these constants were generated from. */
 export const SCHEMA_URL = "{{ (ctx.groups | first).lineage.provenance.schema_url }}";
 
-// Metric names.
+// Metric names, descriptions and units. The registry is the single source for
+// all three, so a panel that labels a metric reads the description from here
+// rather than restating it.
 {% for group in ctx.groups | selectattr("type", "equalto", "metric") %}
 /** `{{ group.metric_name }}` ({{ group.instrument }}, unit `{{ group.unit }}`). */
 export const {{ group.metric_name | screaming_snake_case }} = "{{ group.metric_name }}";
+
+{# `tojson` here, unlike the Rust template: a TypeScript string literal cannot
+   span a raw newline, so JSON's escaping is the safe choice even though it
+   spells `'` as the noisier `\u0027`. #}
+/** `{{ group.metric_name }}` description (the registry `brief`). */
+export const {{ group.metric_name | screaming_snake_case }}_DESCRIPTION = {{ group.brief | trim | tojson }};
+
+/** `{{ group.metric_name }}` unit (UCUM). */
+export const {{ group.metric_name | screaming_snake_case }}_UNIT = "{{ group.unit }}";
 {% endfor %}
 
 // Attribute keys.

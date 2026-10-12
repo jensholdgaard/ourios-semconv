@@ -25,10 +25,22 @@
 /// resolved provenance (uniform across the registry).
 pub const SCHEMA_URL: &str = "{{ (ctx.groups | first).lineage.provenance.schema_url }}";
 
-// Metric names (RFC 0009 §3.6).
+// Metric names, descriptions and units (RFC 0009 §3.6). The registry is the
+// single source for all three: pass the `_DESCRIPTION` and `_UNIT` constants
+// to `with_description` and `with_unit` at the instrument call site so the
+// registry `brief` and `unit` reach the wire instead of being restated there.
 {% for group in ctx.groups | selectattr("type", "equalto", "metric") %}
 /// `{{ group.metric_name }}` ({{ group.instrument }}, unit `{{ group.unit }}`).
 pub const {{ group.metric_name | screaming_snake_case }}: &str = "{{ group.metric_name }}";
+
+{# `brief` is escaped by hand rather than with `tojson`: JSON renders a literal
+   `'` as `\u0027`, which Rust rejects (it spells the same escape `\u{0027}`).
+   Rust string literals take a raw newline, so only `\` and `"` need escaping. #}
+/// `{{ group.metric_name }}` description (the registry `brief`).
+pub const {{ group.metric_name | screaming_snake_case }}_DESCRIPTION: &str = "{{ group.brief | trim | replace('\\', '\\\\') | replace('"', '\\"') }}";
+
+/// `{{ group.metric_name }}` unit (UCUM).
+pub const {{ group.metric_name | screaming_snake_case }}_UNIT: &str = "{{ group.unit }}";
 {% endfor %}
 
 // Attribute keys.
