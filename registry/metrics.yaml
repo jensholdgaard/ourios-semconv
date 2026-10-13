@@ -591,8 +591,9 @@ groups:
     metric_name: ourios.template_map.lookups
     stability: development
     brief: >-
-      Cached template-map lookups on the querier read path (RFC 0033
-      §3.3), by outcome. Every outcome answers correctly — the attribute
+      Cached template-map lookups by the querier (RFC 0033 §3.3), by
+      outcome, whether a query or the background refresh (RFC 0060)
+      initiated them. Every outcome yields a correct map — the attribute
       distinguishes what IO paid for it (one attribute on one counter,
       the error.type convention, not per-outcome counters).
     instrument: counter
