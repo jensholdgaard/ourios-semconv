@@ -1101,7 +1101,7 @@ groups:
     metric_name: ourios.template_map.acquire.wait.duration
     stability: development
     brief: >-
-      Time a query waited on another query's template-map acquisition (#924); recorded only for joiners (lookup outcome `joined`).
+      Time a lookup waited on an acquisition another query or the background refresh initiated (#924, RFC 0060); recorded only for joiners (lookup outcome `joined`).
     instrument: histogram
     unit: "s"
 
