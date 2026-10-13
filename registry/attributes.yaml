@@ -189,6 +189,18 @@ groups:
         brief: >-
           Why a stale template-map derive fell back from an incremental to a
           full fold.
+      - id: ourios.template_map.acquire.trigger
+        type:
+          members:
+            - {id: query, value: "query", stability: development, brief: "A query initiated it."}
+            - {id: refresh, value: "refresh", stability: development, brief: "The querier's background refresh initiated it (a query may join it)."}
+        stability: development
+        brief: >-
+          What initiated a template-map acquisition.
+        note: >-
+          Follows the precedent of `faas.trigger`. Records who initiated the
+          acquisition, not whether anyone waited: a query may join a
+          refresh-initiated fold, recording `joined` (RFC 0060).
       - id: ourios.file_set.list_request_count
         type: int
         stability: development
@@ -380,18 +392,19 @@ groups:
               value: "joined"
               stability: development
               brief: >-
-                Another query was already acquiring the map at the same
-                frontier (reading the artifact or folding the audit
-                history); this query waited for that single shared
-                acquisition and was served its map. The acquiring query
-                records its own outcome (`hit`, `miss`, `stale`, ...). An
-                acquisition that fails records no outcome, for the
-                acquiring query or its waiters.
+                Another acquisition (by a query or the background refresh)
+                was already running at the same frontier (reading the
+                artifact or folding the audit history); this lookup waited
+                for that single shared acquisition and was served its map.
+                The acquisition's initiator records its own outcome (`hit`,
+                `miss`, `stale`, ...). An acquisition that fails records no
+                outcome, for its initiator or its waiters.
         stability: development
         brief: >-
-          The outcome of a cached template-map lookup (RFC 0033 §3.3).
-          Every outcome answers the query correctly — the dimension
-          distinguishes what IO paid for it, never what was served.
+          The outcome of a cached template-map lookup (RFC 0033 §3.3),
+          whichever initiated it (`ourios.template_map.acquire.trigger`).
+          Every outcome yields a correct map — the dimension distinguishes
+          what IO paid for it, never what was served.
       - id: ourios.template_map.lookup.anomaly
         type:
           members:

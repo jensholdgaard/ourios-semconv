@@ -591,8 +591,9 @@ groups:
     metric_name: ourios.template_map.lookups
     stability: development
     brief: >-
-      Cached template-map lookups on the querier read path (RFC 0033
-      §3.3), by outcome. Every outcome answers correctly — the attribute
+      Cached template-map lookups by the querier (RFC 0033 §3.3), by
+      outcome, whether a query or the background refresh (RFC 0060)
+      initiated them. Every outcome yields a correct map — the attribute
       distinguishes what IO paid for it (one attribute on one counter,
       the error.type convention, not per-outcome counters).
     instrument: counter
@@ -603,6 +604,8 @@ groups:
       - ref: ourios.template_map.lookup.anomaly
         requirement_level:
           conditionally_required: If the fold behind the lookup detected one.
+      - ref: ourios.template_map.acquire.trigger
+        requirement_level: recommended
 
   - id: metric.ourios.template_map.publishes
     type: metric
@@ -1031,6 +1034,8 @@ groups:
       - ref: ourios.template_map.derive.fallback.reason
         requirement_level:
           conditionally_required: If `ourios.template_map.derive.reason` is `stale` and `ourios.template_map.derive.mode` is `full`.
+      - ref: ourios.template_map.acquire.trigger
+        requirement_level: recommended
       - ref: error.type
         requirement_level: 
           conditionally_required: If the derive failed.
@@ -1052,6 +1057,8 @@ groups:
       - ref: ourios.template_map.derive.fallback.reason
         requirement_level:
           conditionally_required: If `ourios.template_map.derive.reason` is `stale` and `ourios.template_map.derive.mode` is `full`.
+      - ref: ourios.template_map.acquire.trigger
+        requirement_level: recommended
 
   - id: metric.ourios.template_map.derive.audit.size
     type: metric
@@ -1070,13 +1077,31 @@ groups:
       - ref: ourios.template_map.derive.fallback.reason
         requirement_level:
           conditionally_required: If `ourios.template_map.derive.reason` is `stale` and `ourios.template_map.derive.mode` is `full`.
+      - ref: ourios.template_map.acquire.trigger
+        requirement_level: recommended
+
+  - id: metric.ourios.template_map.refresh.duration
+    type: metric
+    metric_name: ourios.template_map.refresh.duration
+    stability: development
+    brief: >-
+      Duration of one background template-map refresh pass over every tenant (RFC 0060).
+    note: >-
+      A tenant whose acquisition fails is recorded on its own span; the pass handles it and
+      continues, so only a pass that ends early (a failed tenant listing) carries `error.type`.
+    instrument: histogram
+    unit: "s"
+    attributes:
+      - ref: error.type
+        requirement_level:
+          conditionally_required: If the pass ended early.
 
   - id: metric.ourios.template_map.acquire.wait.duration
     type: metric
     metric_name: ourios.template_map.acquire.wait.duration
     stability: development
     brief: >-
-      Time a query waited on another query's template-map acquisition (#924); recorded only for joiners (lookup outcome `joined`).
+      Time a lookup waited on an acquisition another query or the background refresh initiated (#924, RFC 0060); recorded only for joiners (lookup outcome `joined`).
     instrument: histogram
     unit: "s"
 
