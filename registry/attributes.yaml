@@ -189,6 +189,17 @@ groups:
         brief: >-
           Why a stale template-map derive fell back from an incremental to a
           full fold.
+      - id: ourios.template_map.acquire.trigger
+        type:
+          members:
+            - {id: query, value: "query", stability: development, brief: "A query needed the template map."}
+            - {id: refresh, value: "refresh", stability: development, brief: "The querier's background refresh acquired it, with no query waiting."}
+        stability: development
+        brief: >-
+          What caused a template-map acquisition.
+        note: >-
+          Follows the precedent of `faas.trigger`. Separates the folds a user
+          waited for from the folds the background refresh paid for (RFC 0060).
       - id: ourios.file_set.list_request_count
         type: int
         stability: development
