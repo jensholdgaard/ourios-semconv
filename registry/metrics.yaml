@@ -17,6 +17,10 @@ groups:
     brief: Number of partitions consolidated.
     instrument: counter
     unit: "{partition}"
+    attributes:
+      - ref: ourios.tenant
+        requirement_level:
+          conditionally_required: If the observation is one committed partition's (#1016).
 
   - id: metric.ourios.compaction.files
     type: metric
@@ -25,6 +29,10 @@ groups:
     brief: Number of input files merged away by compaction.
     instrument: counter
     unit: "{file}"
+    attributes:
+      - ref: ourios.tenant
+        requirement_level:
+          conditionally_required: If the observation is one committed partition's (#1016).
 
   - id: metric.ourios.compaction.rows
     type: metric
@@ -33,6 +41,10 @@ groups:
     brief: Number of rows rewritten during consolidation.
     instrument: counter
     unit: "{row}"
+    attributes:
+      - ref: ourios.tenant
+        requirement_level:
+          conditionally_required: If the observation is one committed partition's (#1016).
 
   - id: metric.ourios.compaction.io
     type: metric
@@ -44,6 +56,9 @@ groups:
     attributes:
       - ref: ourios.io.direction
         requirement_level: required
+      - ref: ourios.tenant
+        requirement_level:
+          conditionally_required: If the observation is one committed partition's (#1016).
 
   - id: metric.ourios.compaction.duration
     type: metric
@@ -1137,6 +1152,9 @@ groups:
       Input files of one compacted partition (#925); the small-file shape.
     instrument: histogram
     unit: "{file}"
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
 
   - id: metric.ourios.compaction.partition.input.size
     type: metric
@@ -1148,6 +1166,8 @@ groups:
     unit: "By"
     attributes:
       - ref: ourios.compaction.size.kind
+        requirement_level: required
+      - ref: ourios.tenant
         requirement_level: required
 
   - id: metric.ourios.compaction.spill.runs
