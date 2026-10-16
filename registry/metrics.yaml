@@ -79,6 +79,27 @@ groups:
     instrument: counter
     unit: "{file}"
 
+  - id: metric.ourios.compaction.orphan.reclaimed
+    type: metric
+    metric_name: ourios.compaction.orphan.reclaimed
+    stability: development
+    brief: >-
+      Delete attempts of the compaction sweep's orphan GC pass, one per
+      orphan file (RFC 0009 RFC0009.4). A successful delete response
+      carries no `error.type`; a failed delete carries `error.type` (`io`),
+      and the file is left for a later pass, which counts it again. Only an
+      explicit not-found result is not counted, so an idempotent success
+      (S3 answers a delete of an absent key with success) can count a file
+      another actor already removed.
+    instrument: counter
+    unit: "{file}"
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
+      - ref: error.type
+        requirement_level:
+          conditionally_required: If and only if the delete failed.
+
   - id: metric.ourios.compaction.backlog
     type: metric
     metric_name: ourios.compaction.backlog
