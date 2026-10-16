@@ -263,6 +263,18 @@ groups:
             - {id: decoded_estimate, value: "decoded_estimate", stability: development, brief: "The decoded-footprint estimate the RFC 0036 §3.2 budget uses."}
         stability: development
         brief: Which size a compaction input-size measurement reports.
+      - id: ourios.compaction.orphan.reclaimed_count
+        type: int
+        stability: development
+        brief: Orphan files one compaction sweep's orphan GC pass deleted.
+        examples: [2]
+      - id: ourios.compaction.orphan.failed_count
+        type: int
+        stability: development
+        brief: >-
+          Orphan files whose delete failed in one compaction sweep's orphan
+          GC pass; each is left for a later pass.
+        examples: [0]
       - id: ourios.query.kind
         type:
           members:

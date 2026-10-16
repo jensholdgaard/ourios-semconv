@@ -79,6 +79,25 @@ groups:
     instrument: counter
     unit: "{file}"
 
+  - id: metric.ourios.compaction.orphan.reclaimed
+    type: metric
+    metric_name: ourios.compaction.orphan.reclaimed
+    stability: development
+    brief: >-
+      Orphan files the compaction sweep's orphan GC pass deleted or tried
+      to delete (RFC 0009 RFC0009.4). A deleted file carries no
+      `error.type`; a file whose delete failed carries `error.type` (`io`)
+      and is left for a later pass, which counts it again. A file already
+      gone is not counted.
+    instrument: counter
+    unit: "{file}"
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
+      - ref: error.type
+        requirement_level:
+          conditionally_required: If and only if the delete failed.
+
   - id: metric.ourios.compaction.backlog
     type: metric
     metric_name: ourios.compaction.backlog
