@@ -266,7 +266,10 @@ groups:
       - id: ourios.compaction.orphan.reclaimed_count
         type: int
         stability: development
-        brief: Orphan files one compaction sweep's orphan GC pass deleted.
+        brief: >-
+          Successful delete responses in one compaction sweep's orphan GC
+          pass, one per orphan file. An explicit not-found result is not
+          counted; an idempotent success (S3, for an absent key) is.
         examples: [2]
       - id: ourios.compaction.orphan.failed_count
         type: int
