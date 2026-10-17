@@ -12,6 +12,25 @@ groups:
       Compaction is disabled for this process
       (`OURIOS_COMPACTION_ENABLED` / `compaction.enabled: false`), so a
       dedicated compactor elsewhere is expected to sweep.
+  - id: event.ourios.server.telemetry.protocol_unsupported
+    type: event
+    name: ourios.server.telemetry.protocol_unsupported
+    stability: development
+    brief: >
+      The OTLP exporter protocol the environment requested for one of
+      Ourios's own signals (`OTEL_EXPORTER_OTLP_<SIGNAL>_PROTOCOL`, else
+      `OTEL_EXPORTER_OTLP_PROTOCOL`) is not supported by this build, so
+      that signal exports with a different protocol.
+    note: >
+      Emitted at severity WARN, once per affected signal at start-up.
+      `otel.component.type` names the exporter actually built, which
+      carries both the signal and the protocol used (for example
+      `otlp_grpc_log_exporter`).
+    attributes:
+      - ref: ourios.server.telemetry.requested_protocol
+        requirement_level: required
+      - ref: otel.component.type
+        requirement_level: required
   - id: event.ourios.server.signal_handler.error
     type: event
     name: ourios.server.signal_handler.error
