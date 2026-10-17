@@ -170,6 +170,42 @@ groups:
           signal that spec-valid-but-upstream-rejected payloads (empty
           `AnyValue` encodings) are arriving, and the attribute goes
           away with the upstream fix.
+      - id: ourios.ingest.batch.record_count
+        type: int
+        stability: development
+        brief: >-
+          Log records in one OTLP Export batch, counted across every
+          `ResourceLogs` and `ScopeLogs` (RFC 0038 §3.5).
+        note: >-
+          Set on the `ingest logs` span. No upstream attribute counts the
+          log records of a received batch; `messaging.batch.message_count`
+          is scoped to messaging spans.
+        examples: [512]
+      - id: ourios.ingest.batch.size
+        type: int
+        stability: development
+        brief: >-
+          Byte length of one OTLP Export batch's WAL frame payload: the
+          tenant prefix plus the protobuf `ExportLogsServiceRequest`.
+        note: >-
+          Set on the `ingest logs` span. The same figure for either
+          transport: `http.request.body.size` covers only HTTP and the
+          request body as sent, compressed or JSON-encoded.
+        examples: [65536]
+      - id: ourios.server.telemetry.requested_protocol
+        type: string
+        stability: development
+        brief: >-
+          The OTLP exporter protocol the environment requested for one of
+          Ourios's own signals, as configured.
+        note: >-
+          The value of `OTEL_EXPORTER_OTLP_<SIGNAL>_PROTOCOL`, else
+          `OTEL_EXPORTER_OTLP_PROTOCOL`, trimmed. The specification's
+          values are `grpc`, `http/protobuf` and `http/json`, but the
+          attribute records whatever was set. No upstream attribute holds
+          a configured OTLP protocol: `network.protocol.name` is the
+          application-layer protocol in use, not a requested setting.
+        examples: ["http/json", "http/protobuf"]
       - id: ourios.template_map.derive.reason
         type:
           members:
@@ -281,6 +317,15 @@ groups:
             - {id: decoded_estimate, value: "decoded_estimate", stability: development, brief: "The decoded-footprint estimate the RFC 0036 §3.2 budget uses."}
         stability: development
         brief: Which size a compaction input-size measurement reports.
+      - id: ourios.compaction.partition.unsealed_count
+        type: int
+        stability: development
+        brief: >-
+          Partitions a compaction sweep's planning listed but did not plan
+          because their hour plus the grace period has not yet passed.
+        note: >-
+          Set on the `plan partitions` span, summed over the tenants.
+        examples: [3]
       - id: ourios.compaction.orphan.reclaimed_count
         type: int
         stability: development

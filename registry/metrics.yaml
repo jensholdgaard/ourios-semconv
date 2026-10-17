@@ -338,15 +338,26 @@ groups:
         requirement_level: required
 
   # Ingest write path (RFC 0014 §6.3 / RFC 0008): throughput + the
-  # WAL-before-ack durability latency. Aggregate (no tenant/service
-  # attributes) so a performance run reads system throughput directly.
+  # WAL-before-ack durability latency. The two counters carry the
+  # batch's tenant (one tenant per batch, RFC 0046), never the source
+  # service; summing over `ourios.tenant` gives system throughput.
   - id: metric.ourios.ingest.records
     type: metric
     metric_name: ourios.ingest.records
     stability: development
     brief: Log records accepted by the ingest pipeline (post-WAL-durable).
+    note: >-
+      A record whose severity number is outside the OTLP range is still
+      accepted and counted, with `error.type` `severity_out_of_range`
+      (RFC 0018 §3.5); every other record carries no `error.type`.
     instrument: counter
     unit: "{record}"
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
+      - ref: error.type
+        requirement_level:
+          conditionally_required: If the record's severity number is outside the OTLP range.
 
   - id: metric.ourios.ingest.batches
     type: metric
@@ -356,6 +367,8 @@ groups:
     instrument: counter
     unit: "{batch}"
     attributes:
+      - ref: ourios.tenant
+        requirement_level: required
       - ref: ourios.ingest.json.lenient
         requirement_level: recommended
 
