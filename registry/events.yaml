@@ -53,6 +53,23 @@ groups:
       without the rows, the graph tuples are deleted, and the marker is
       removed (RFC 0047 §3.6 / RFC 0048 §3.3). The message names the
       tenant, the conversation, rows dropped and tuples deleted.
+  - id: event.ourios.compaction.erasure.deferred
+    type: event
+    name: ourios.compaction.erasure.deferred
+    stability: development
+    brief: >
+      A pending conversation-erasure request's rows phase was not started
+      this sweep; the request stays pending and is retried next sweep
+      (RFC 0047 §3.6). The message names the tenant and the conversation.
+    note: >
+      Emitted at severity INFO, once per deferred request per sweep. The
+      conversation id stays in the message, not an attribute, to bound
+      cardinality.
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
+      - ref: ourios.compaction.erasure.deferral_reason
+        requirement_level: required
   - id: event.ourios.graph.backfill.progress
     type: event
     name: ourios.graph.backfill.progress

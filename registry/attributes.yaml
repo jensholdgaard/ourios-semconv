@@ -104,6 +104,24 @@ groups:
               brief: A partition skipped due to an error (resilient sweep).
         stability: development
         brief: The outcome of a compaction sweep or partition.
+      - id: ourios.compaction.erasure.deferral_reason
+        type:
+          members:
+            - id: backfill_in_progress
+              value: "backfill_in_progress"
+              stability: development
+              brief: >-
+                A graph backfill holds the tenant's lock, and erasure and
+                backfill exclude each other (RFC 0048 §3.4).
+            - id: settling
+              value: "settling"
+              stability: development
+              brief: >-
+                The request is younger than `erasure_settle`, so rows
+                acknowledged before it may not be published yet
+                (RFC 0009 §3.4).
+        stability: development
+        brief: Why a pending conversation-erasure request was deferred.
       - id: ourios.sink.flush.trigger
         type:
           members:
