@@ -354,7 +354,10 @@ groups:
     unit: "{record}"
     attributes:
       - ref: ourios.tenant
-        requirement_level: required
+        requirement_level:
+          conditionally_required: >-
+            If the observation is one accepted batch's records; the zero
+            point recorded at start-up has none.
       - ref: error.type
         requirement_level:
           conditionally_required: If the record's severity number is outside the OTLP range.
@@ -364,11 +367,24 @@ groups:
     metric_name: ourios.ingest.batches
     stability: development
     brief: OTLP batches accepted by the ingest pipeline.
+    note: >-
+      A request rejected by authentication or authorization is counted
+      too, with `error.type` (`unauthenticated`, `upstream_unavailable` or
+      `permission_denied`, RFC 0026 §3.4) and no `ourios.tenant`: the
+      tenant is unknown before authentication, and a denied tenant is
+      chosen by the caller, so it would let an unauthorized client create
+      series.
     instrument: counter
     unit: "{batch}"
     attributes:
       - ref: ourios.tenant
-        requirement_level: required
+        requirement_level:
+          conditionally_required: >-
+            If the observation is one accepted batch; the zero point
+            recorded at start-up and rejected requests have none.
+      - ref: error.type
+        requirement_level:
+          conditionally_required: If the request was rejected.
       - ref: ourios.ingest.json.lenient
         requirement_level: recommended
 
