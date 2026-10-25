@@ -1047,7 +1047,9 @@ groups:
     metric_name: ourios.storage.bridge.thread.created
     stability: development
     brief: >-
-      OS threads the blocking bridge created (#926). Flat when the bridge reuses threads; a rising rate is the #853 thread-explosion signature.
+      OS threads the storage bridge runtime started, workers and blocking-pool threads (#926).
+    note: >-
+      An idle blocking-pool thread retires after the bridge's keep-alive, so load arriving in bursts further apart than that starts threads again in steps up to each burst's concurrency. That sawtooth is expected. A rate that rises steadily, or tracks the storage call rate, means threads are not being reused (the #853 thread-explosion signature).
     instrument: counter
     unit: "{thread}"
 
