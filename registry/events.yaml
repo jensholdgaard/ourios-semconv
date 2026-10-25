@@ -128,6 +128,29 @@ groups:
       record flush and snapshot are skipped this cycle so a clean row is
       not exposed before its template event is durable. No acknowledged
       data is lost — the WAL is durable.
+  - id: event.ourios.receiver.audit_sink.dropped
+    type: event
+    name: ourios.receiver.audit_sink.dropped
+    stability: development
+    brief: >
+      The audit sink dropped one audit partition's buffered events after a
+      permanent write error, so they are not persisted. Unlike a transient
+      store error (`ourios.receiver.audit_sink.retained`), retrying cannot
+      succeed, and keeping the batch would wedge the partition behind it.
+    note: >
+      Emitted once per dropped partition flush, at severity ERROR, beside
+      `ourios.audit_sink.flush.errors` with `ourios.audit_sink.flush.outcome`
+      = `permanent`. The event count and the partition date are in the
+      body. `error.type` names why: `parquet` (encoding the Parquet file
+      failed), `batch` (building the Arrow batch failed),
+      `partition_mismatch` (an event does not belong to the partition being
+      written), `poisoned` (the writer was left unusable by an earlier
+      panic), or `_OTHER`.
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.receiver.sink.retained
     type: event
     name: ourios.receiver.sink.retained
