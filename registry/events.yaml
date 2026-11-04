@@ -113,6 +113,21 @@ groups:
     stability: development
     brief: >
       The querier role failed to drain cleanly during graceful shutdown.
+  - id: event.ourios.wal.recovery.tail.truncated
+    type: event
+    name: ourios.wal.recovery.tail.truncated
+    stability: development
+    brief: >
+      Crash recovery truncated a torn tail from the newest WAL segment
+      (RFC 0068 §3.3). The bytes cut were never acknowledged.
+    note: >
+      Emitted at severity WARN, once per healed segment, beside
+      `ourios.wal.recovery.truncated.size`. The segment's UUIDv7, the
+      last valid frame boundary and the segment length before the cut
+      are in the body.
+    attributes:
+      - ref: ourios.wal.recovery.tail.shape
+        requirement_level: required
   - id: event.ourios.receiver.shutdown.error
     type: event
     name: ourios.receiver.shutdown.error
