@@ -876,6 +876,14 @@ groups:
         brief: >-
           The shape of the torn tail crash recovery cut from the newest
           WAL segment (RFC 0068 §3.1).
+      - id: ourios.wal.recovery.tail.offset
+        type: int
+        stability: development
+        brief: >-
+          The byte offset where a torn tail starts on the newest WAL
+          segment: the end of its last valid frame, and the segment's
+          length once recovery has truncated it (RFC 0068 §3.1).
+        examples: [0, 1048576]
 
   # `log.record.template` — a LOCAL definition, not a `ref:` (RFC 0050
   # §3.6): the attribute is not in the upstream registry to reference
