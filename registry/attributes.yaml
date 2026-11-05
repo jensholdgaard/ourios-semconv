@@ -864,14 +864,16 @@ groups:
               value: "partial_frame"
               stability: development
               brief: >-
-                Fewer than a header's bytes, or a header whose payload
-                runs past end of file (RFC 0068 §3.1 T1, RFC0008.4).
+                Between 1 and 11 bytes from the last valid frame
+                boundary to end of file, whatever their value, or a
+                well-formed header whose declared payload runs past end
+                of file (RFC 0068 §3.1 T1, RFC0008.4).
             - id: zero_tail
               value: "zero_tail"
               stability: development
               brief: >-
-                Zero bytes from the last valid frame boundary to end of
-                file (RFC 0068 §3.1 T2).
+                12 or more bytes, every one zero, from the last valid
+                frame boundary to end of file (RFC 0068 §3.1 T2).
         stability: development
         brief: >-
           The shape of the torn tail crash recovery cut from the newest

@@ -119,7 +119,8 @@ groups:
     stability: development
     brief: >
       Crash recovery truncated a torn tail from the newest WAL segment
-      (RFC 0068 §3.3). The bytes cut were never acknowledged.
+      (RFC 0068 §3.3). On storage that writes each sector atomically
+      (RFC 0068 §3.4), the bytes cut were never acknowledged.
     note: >
       Emitted at severity WARN, once per healed segment, beside
       `ourios.wal.recovery.truncated.size`. `file.path` names the
