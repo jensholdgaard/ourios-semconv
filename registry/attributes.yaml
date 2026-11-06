@@ -857,6 +857,35 @@ groups:
           The kind of the WAL's retain floor (`RetainFloor`, RFC 0052
           §3.2) — the `ourios.wal.retain_floor.status` metric's state
           dimension.
+      - id: ourios.wal.recovery.tail.shape
+        type:
+          members:
+            - id: partial_frame
+              value: "partial_frame"
+              stability: development
+              brief: >-
+                Between 1 and 11 bytes from the last valid frame
+                boundary to end of file, whatever their value, or a
+                well-formed header whose declared payload runs past end
+                of file (RFC 0068 §3.1 T1, RFC0008.4).
+            - id: zero_tail
+              value: "zero_tail"
+              stability: development
+              brief: >-
+                12 or more bytes, every one zero, from the last valid
+                frame boundary to end of file (RFC 0068 §3.1 T2).
+        stability: development
+        brief: >-
+          The shape of the torn tail crash recovery cut from the newest
+          WAL segment (RFC 0068 §3.1).
+      - id: ourios.wal.recovery.tail.offset
+        type: int
+        stability: development
+        brief: >-
+          The byte offset where a torn tail starts on the newest WAL
+          segment: the end of its last valid frame, and the segment's
+          length once recovery has truncated it (RFC 0068 §3.1).
+        examples: [0, 1048576]
 
   # `log.record.template` — a LOCAL definition, not a `ref:` (RFC 0050
   # §3.6): the attribute is not in the upstream registry to reference

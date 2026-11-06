@@ -848,6 +848,27 @@ groups:
     instrument: gauge
     unit: "{failure}"
 
+  - id: metric.ourios.wal.recovery.truncated.size
+    type: metric
+    metric_name: ourios.wal.recovery.truncated.size
+    stability: development
+    brief: >-
+      Bytes crash recovery truncated from the tail of the newest WAL
+      segment (RFC 0068 §3.3).
+    note: >-
+      Grows only at start-up, once per healed segment, by the length of
+      the torn tail. On storage that writes each sector atomically
+      (RFC 0068 §3.4's deployment requirement), an increase means the
+      previous run ended in a crash or power loss mid-append and the
+      bytes cut were never acknowledged. A device fault that zeroes
+      acknowledged frames through end of file is healed the same way:
+      RFC 0068 §3.4 accepts that residual risk.
+    instrument: counter
+    unit: "By"
+    attributes:
+      - ref: ourios.wal.recovery.tail.shape
+        requirement_level: required
+
   - id: metric.ourios.wal.housekeeping.horizon.remaining
     type: metric
     metric_name: ourios.wal.housekeeping.horizon.remaining
