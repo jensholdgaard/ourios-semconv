@@ -906,6 +906,51 @@ groups:
           Bounded by the replication factor: one value per voter of a
           group.
         examples: ["ourios-receiver-1"]
+      - id: ourios.wal.replication.flusher.assignment.reason
+        type:
+          members:
+            - id: unassigned
+              value: "unassigned"
+              stability: development
+              brief: The group had no flusher.
+            - id: not_learner
+              value: "not_learner"
+              stability: development
+              brief: >-
+                The flusher was no longer a learner of the group's
+                committed membership.
+            - id: unhealthy
+              value: "unhealthy"
+              stability: development
+              brief: >-
+                The flusher had been unhealthy, its last acknowledgement
+                of the leader older than the flusher patience, for the
+                patience (RFC 0065 §6.5).
+        stability: development
+        brief: >-
+          Why a replication group's leader assigned a new flusher (RFC
+          0065 §6.5).
+      - id: ourios.wal.replication.control.hold.reason
+        type:
+          members:
+            - id: member_unconfirmed
+              value: "member_unconfirmed"
+              stability: development
+              brief: >-
+                A member of the group's latest membership had not answered
+                `Identify` with a highest readable control kind at or above
+                the new kind (RFC 0065 §6.8).
+            - id: membership_change
+              value: "membership_change"
+              stability: development
+              brief: >-
+                A membership change was in flight, and a new kind and a
+                membership change are never in flight together (RFC 0065
+                §6.5).
+        stability: development
+        brief: >-
+          Why a replication group's leader held back a control entry of a
+          kind its log has never held.
 
   # `log.record.template` — a LOCAL definition, not a `ref:` (RFC 0050
   # §3.6): the attribute is not in the upstream registry to reference
