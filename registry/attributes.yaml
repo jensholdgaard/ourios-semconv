@@ -886,6 +886,26 @@ groups:
           segment: the end of its last valid frame, and the segment's
           length once recovery has truncated it (RFC 0068 §3.1).
         examples: [0, 1048576]
+      - id: ourios.wal.group
+        type: int
+        stability: development
+        brief: >-
+          The replication group of the replicated WAL (RFC 0065 §6.1): the
+          group a tenant's exports commit to, numbered from 0.
+        note: >-
+          Bounded by the configured group count, which the voting layout
+          check fixes for the life of the cluster.
+        examples: [0, 7]
+      - id: ourios.wal.replica
+        type: string
+        stability: development
+        brief: >-
+          The `node_id` of a voting replica of the replicated WAL (RFC 0065
+          §6.1), as the receivers' `peers` name it.
+        note: >-
+          Bounded by the replication factor: one value per voter of a
+          group.
+        examples: ["ourios-receiver-1"]
 
   # `log.record.template` — a LOCAL definition, not a `ref:` (RFC 0050
   # §3.6): the attribute is not in the upstream registry to reference
