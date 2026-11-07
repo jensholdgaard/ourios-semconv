@@ -869,6 +869,68 @@ groups:
       - ref: ourios.wal.recovery.tail.shape
         requirement_level: required
 
+  - id: metric.ourios.wal.replication.lag
+    type: metric
+    metric_name: ourios.wal.replication.lag
+    stability: development
+    brief: >-
+      Log entries a replication group's leader has appended that it has
+      not yet seen a follower match (RFC 0065 §6.9).
+    note: >-
+      Recorded by the leader only, one series per follower of each group
+      it leads, measured from the leader's last appended entry. Under
+      load every follower trails by the entries still in flight, so a
+      small lag that holds steady is ordinary backlog. A follower whose
+      lag keeps growing is down, cut off or slow to fsync. Lag alone does
+      not show lost acknowledgements: the group stops acknowledging only
+      when fewer than a majority of voters keep matching new entries,
+      which `ourios.ingest.batches` shows as `error.type`
+      `not_enough_replicas`.
+    instrument: gauge
+    unit: "{entry}"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+      - ref: ourios.wal.replica
+        requirement_level: required
+
+  - id: metric.ourios.wal.replication.takeovers
+    type: metric
+    metric_name: ourios.wal.replication.takeovers
+    stability: development
+    brief: >-
+      Times this node became the leader of a replication group (RFC 0065
+      §6.9).
+    note: >-
+      Counted once per term, by the node that leads it, so the sum over
+      nodes is the number of leadership changes. A steady rise with no
+      node restarts means elections are churning, for example because
+      heartbeats miss the election timeout. Exports still waiting on the
+      previous leader get the retryable rejection.
+    instrument: counter
+    unit: "{takeover}"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+
+  - id: metric.ourios.wal.replication.term
+    type: metric
+    metric_name: ourios.wal.replication.term
+    stability: development
+    brief: >-
+      The Raft term of a replication group as this node last saw it (RFC
+      0065 §6.9).
+    note: >-
+      Every voter of a group reports it, and in a healthy group they
+      agree. A voter whose term runs ahead of the others keeps starting
+      elections it cannot win, typically because it is cut off from the
+      leader.
+    instrument: gauge
+    unit: "{term}"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+
   - id: metric.ourios.wal.housekeeping.horizon.remaining
     type: metric
     metric_name: ourios.wal.housekeeping.horizon.remaining
