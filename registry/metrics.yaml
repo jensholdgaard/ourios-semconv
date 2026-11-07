@@ -931,6 +931,51 @@ groups:
       - ref: ourios.wal.group
         requirement_level: required
 
+  - id: metric.ourios.wal.replication.flusher.assignments
+    type: metric
+    metric_name: ourios.wal.replication.flusher.assignments
+    stability: development
+    brief: >-
+      Flusher assignments a replication group's leader committed (RFC 0065
+      §6.5).
+    note: >-
+      Counted by the leader once its assignment commits. One `unassigned`
+      per group when it first gets a flusher is expected. `unhealthy`
+      means the flusher stopped acknowledging the leader for twice the
+      flusher patience, or never acknowledged a new leader within one
+      patience of its takeover; a steady rise of it means tail replicas
+      keep failing; `not_learner` follows a tail placement change or a wiped
+      tail node. Each assignment moves Parquet writing to another
+      replica, which compaction deduplicates.
+    instrument: counter
+    unit: "{assignment}"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+      - ref: ourios.wal.replication.flusher.assignment.reason
+        requirement_level: required
+
+  - id: metric.ourios.wal.replication.control.holds
+    type: metric
+    metric_name: ourios.wal.replication.control.holds
+    stability: development
+    brief: >-
+      Leader passes that held back a control entry of a kind the group's
+      log has never held (RFC 0065 §6.5, §6.8).
+    note: >-
+      Counted once per pass that held an entry back, so it rises at the
+      pass rate for as long as the hold lasts. During a rolling upgrade
+      `member_unconfirmed` is expected until every member runs the new
+      release; one that keeps rising after the rollout means a member
+      still runs an older release or does not answer `Identify`.
+    instrument: counter
+    unit: "{hold}"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+      - ref: ourios.wal.replication.control.hold.reason
+        requirement_level: required
+
   - id: metric.ourios.wal.housekeeping.horizon.remaining
     type: metric
     metric_name: ourios.wal.housekeeping.horizon.remaining
