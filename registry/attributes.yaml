@@ -923,9 +923,11 @@ groups:
               value: "unhealthy"
               stability: development
               brief: >-
-                The flusher had been unhealthy, its last acknowledgement
-                of the leader older than the flusher patience, for the
-                patience (RFC 0065 §6.5).
+                The flusher had been unhealthy for the flusher patience
+                (RFC 0065 §6.5): its last acknowledgement of the leader
+                older than the patience for a further patience, or, if
+                it never acknowledged this leader, since the leader took
+                over.
         stability: development
         brief: >-
           Why a replication group's leader assigned a new flusher (RFC

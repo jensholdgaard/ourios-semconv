@@ -941,9 +941,10 @@ groups:
     note: >-
       Counted by the leader once its assignment commits. One `unassigned`
       per group when it first gets a flusher is expected. `unhealthy`
-      means a tail replica stopped acknowledging the leader for twice the
-      flusher patience, and a steady rise of it means tail replicas keep
-      failing; `not_learner` follows a tail placement change or a wiped
+      means the flusher stopped acknowledging the leader for twice the
+      flusher patience, or never acknowledged a new leader within one
+      patience of its takeover; a steady rise of it means tail replicas
+      keep failing; `not_learner` follows a tail placement change or a wiped
       tail node. Each assignment moves Parquet writing to another
       replica, which compaction deduplicates.
     instrument: counter
