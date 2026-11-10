@@ -976,6 +976,63 @@ groups:
       - ref: ourios.wal.replication.control.hold.reason
         requirement_level: required
 
+  - id: metric.ourios.wal.replication.sync.duration
+    type: metric
+    metric_name: ourios.wal.replication.sync.duration
+    stability: development
+    brief: >-
+      Wall-clock time for a replicated WAL storage writer to write one batch
+      of queued commands and fsync it.
+    note: >-
+      One measurement per write-and-fsync, by the log store of each group
+      and by the node's vote log. A failed write or fsync carries
+      `error.type`, the `std::io::ErrorKind` of the error in snake case
+      (`storage_full`, `permission_denied`, `other`); the writer then
+      refuses every later command without writing, so a failure is
+      recorded once and the component stops, which
+      `ourios.wal.replication.stops` counts. Rising latency on `vote_log`
+      slows every election on the node at once.
+    instrument: histogram
+    unit: "s"
+    attributes:
+      - ref: ourios.wal.replication.component
+        requirement_level: required
+        note: >-
+          `log_store` or `vote_log`.
+      - ref: ourios.wal.group
+        requirement_level:
+          conditionally_required: If and only if the component is `log_store`.
+      - ref: error.type
+        requirement_level:
+          conditionally_required: If and only if the write or fsync failed.
+
+  - id: metric.ourios.wal.replication.stops
+    type: metric
+    metric_name: ourios.wal.replication.stops
+    stability: development
+    brief: >-
+      Times a part of a replication group stopped on an error it does not
+      recover from by itself.
+    note: >-
+      Counted once per group and component when it stops. Any increase
+      needs an operator: a stopped `log_store`, `vote_log` or
+      `state_machine` stops the group on this node, which no longer votes
+      or applies, and a stopped `miner` stops mining on that tail replica.
+      A `vote_log` stop is counted for every group the node hosts.
+      `error.type` is the `std::io::ErrorKind` in snake case
+      for `log_store`, `vote_log` and `state_machine`, and for `miner` one
+      of `undecodable`, `uncaptured`, `shape_changed`, `out_of_order`,
+      `installed` and `purged`.
+    instrument: counter
+    unit: "{stop}"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+      - ref: ourios.wal.replication.component
+        requirement_level: required
+      - ref: error.type
+        requirement_level: required
+
   - id: metric.ourios.wal.housekeeping.horizon.remaining
     type: metric
     metric_name: ourios.wal.housekeeping.horizon.remaining
