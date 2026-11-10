@@ -953,6 +953,39 @@ groups:
         brief: >-
           Why a replication group's leader held back a control entry of a
           kind its log has never held.
+      - id: ourios.wal.replication.component
+        type:
+          members:
+            - id: log_store
+              value: "log_store"
+              stability: development
+              brief: >-
+                The writer of the group's log: its entries, appended and
+                fsynced before a vote counts toward an acknowledgement.
+            - id: vote_log
+              value: "vote_log"
+              stability: development
+              brief: >-
+                The node's vote log, `votes.log` (RFC 0065 §4.7): one per
+                node, holding the vote of every group the node hosts.
+            - id: state_machine
+              value: "state_machine"
+              stability: development
+              brief: >-
+                The group's state machine, which applies committed entries
+                and records the snapshot at a checkpoint's cut.
+            - id: miner
+              value: "miner"
+              stability: development
+              brief: >-
+                The group's miner on a tail replica, which mines the
+                applied batches (RFC 0065 §6.7).
+        stability: development
+        brief: >-
+          The part of a replication group a signal is about.
+        note: >-
+          `vote_log` is shared by every group on the node, so a vote-log
+          failure stops each of them.
 
   # `log.record.template` — a LOCAL definition, not a `ref:` (RFC 0050
   # §3.6): the attribute is not in the upstream registry to reference
