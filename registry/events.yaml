@@ -136,6 +136,27 @@ groups:
         requirement_level: required
       - ref: file.size
         requirement_level: required
+  - id: event.ourios.wal.replication.stopped
+    type: event
+    name: ourios.wal.replication.stopped
+    stability: development
+    brief: >
+      A part of a replication group stopped on an error it does not
+      recover from by itself.
+    note: >
+      Emitted at severity ERROR, once per stopped component, beside
+      `ourios.wal.replication.stops`, which counts it once per group it
+      stopped. The log body carries the error. `vote_log` is one per
+      node, so its event names no group: it stops every group the node
+      hosts, including groups registered after it failed.
+    attributes:
+      - ref: ourios.wal.replication.component
+        requirement_level: required
+      - ref: error.type
+        requirement_level: required
+      - ref: ourios.wal.group
+        requirement_level:
+          conditionally_required: If and only if the component is not `vote_log`.
   - id: event.ourios.receiver.shutdown.error
     type: event
     name: ourios.receiver.shutdown.error
