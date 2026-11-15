@@ -46,6 +46,27 @@ groups:
         requirement_level:
           conditionally_required: If the observation is one committed partition's (#1016).
 
+  - id: metric.ourios.compaction.row.deduplicated
+    type: metric
+    metric_name: ourios.compaction.row.deduplicated
+    stability: development
+    brief: >-
+      Rows a compaction dropped because they repeat a kept row's ingest
+      position.
+    note: >-
+      The dedup hit count of hazard H8 (RFC 0065 §6.6, §6.9). Only rows
+      from the replicated backend carry an ingest position, and a repeat
+      is the same row published twice: by two flushers during a
+      reassignment, or by a new flusher re-publishing above the last
+      checkpoint. A steady rise outside reassignments and failovers means
+      the flusher re-publishes more than it should. Rows without a
+      position are never counted.
+    instrument: counter
+    unit: "{row}"
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
+
   - id: metric.ourios.compaction.io
     type: metric
     metric_name: ourios.compaction.io
