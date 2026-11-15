@@ -1054,6 +1054,84 @@ groups:
       - ref: error.type
         requirement_level: required
 
+  - id: metric.ourios.wal.replication.kept.audit.usage
+    type: metric
+    metric_name: ourios.wal.replication.kept.audit.usage
+    stability: development
+    brief: >-
+      Estimated bytes of the audit events a tail replica keeps for a
+      takeover, per replication group (RFC 0065 §6.7).
+    note: >-
+      Every tail replica keeps the audit events its miner emitted above
+      the last checkpoint it applied, so that it can publish them if it
+      becomes the group's flusher. The value falls when a checkpoint
+      applies. The limit is 16 MiB per group; a replica that would pass
+      it drops every event it keeps, which
+      `ourios.wal.replication.kept.audit.dropped` counts. A value that
+      climbs toward the limit means checkpoints are not applying, for
+      example during an object-store outage.
+    instrument: gauge
+    unit: "By"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+
+  - id: metric.ourios.wal.replication.kept.audit.dropped
+    type: metric
+    metric_name: ourios.wal.replication.kept.audit.dropped
+    stability: development
+    brief: >-
+      Audit events a tail replica dropped from what it keeps for a takeover
+      (RFC 0065 §6.7).
+    note: >-
+      Counted when the kept events pass their per-group limit. Nothing
+      acknowledged is lost: the group's log still holds every entry, and
+      a flusher with dropped output rebuilds it by replay before it
+      publishes, so an increase delays publication rather than losing
+      data. `ourios.wal.replication.kept.gap` shows how far the replay
+      reaches.
+    instrument: counter
+    unit: "{event}"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+
+  - id: metric.ourios.wal.replication.kept.row.dropped
+    type: metric
+    metric_name: ourios.wal.replication.kept.row.dropped
+    stability: development
+    brief: >-
+      Mined rows a tail replica dropped from what it keeps for a takeover
+      (RFC 0065 §6.7).
+    note: >-
+      Counted when the kept rows do not fit the replica's bound for the
+      group. As with dropped audit events, the group's log still holds
+      every entry and a flusher replays what it dropped before it
+      publishes.
+    instrument: counter
+    unit: "{row}"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+
+  - id: metric.ourios.wal.replication.kept.gap
+    type: metric
+    metric_name: ourios.wal.replication.kept.gap
+    stability: development
+    brief: >-
+      Log entries between the last checkpoint a tail replica applied and
+      the highest entry whose kept output it dropped (RFC 0065 §6.7).
+    note: >-
+      Zero when the replica has dropped nothing above its last applied
+      checkpoint. A non-zero value is the length a flusher must replay
+      before it publishes or proposes a checkpoint; it returns to zero
+      once a checkpoint at or above the gap applies.
+    instrument: gauge
+    unit: "{entry}"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+
   - id: metric.ourios.wal.housekeeping.horizon.remaining
     type: metric
     metric_name: ourios.wal.housekeeping.horizon.remaining
