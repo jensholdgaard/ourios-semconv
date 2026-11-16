@@ -157,6 +157,27 @@ groups:
       - ref: ourios.wal.group
         requirement_level:
           conditionally_required: If and only if the component is not `vote_log`.
+  - id: event.ourios.wal.replication.publication.held
+    type: event
+    name: ourios.wal.replication.publication.held
+    stability: development
+    brief: >
+      A tail replica named as its replication group's flusher publishes
+      nothing, because it cannot read the group's log id (RFC 0065 §6.1).
+    note: >
+      Emitted at severity WARN when the reason first appears or changes,
+      not on every log entry the replica applies. The replica keeps its
+      mined output and tries again at each later entry, so nothing
+      acknowledged is lost; publication resumes once `formed.json` is
+      readable. The log body carries the error. `error.type` is
+      `store_read` when the object store refused the read, and otherwise
+      why the record was refused: `malformed`, `unsupported_format`,
+      `other_group`, `other_voters` or `shared_replica`.
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.receiver.shutdown.error
     type: event
     name: ourios.receiver.shutdown.error
