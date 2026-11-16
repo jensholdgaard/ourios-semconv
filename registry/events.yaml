@@ -186,6 +186,24 @@ groups:
         requirement_level: required
       - ref: error.type
         requirement_level: required
+  - id: event.ourios.wal.replication.checkpoint.failed
+    type: event
+    name: ourios.wal.replication.checkpoint.failed
+    stability: development
+    brief: >
+      A replication group's flusher could not write its checkpoint's bundle
+      or `checkpoint.json` (RFC 0065 §6.5).
+    note: >
+      Emitted at severity WARN once per failed attempt. Nothing is purged
+      and nothing acknowledged is lost: the group's log keeps every entry
+      above the last applied checkpoint, and the next cut retries. The log
+      body carries the error; `error.type` is the one
+      `ourios.wal.replication.checkpoint.duration` records.
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.receiver.shutdown.error
     type: event
     name: ourios.receiver.shutdown.error

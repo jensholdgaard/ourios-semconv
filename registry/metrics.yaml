@@ -1159,6 +1159,36 @@ groups:
         requirement_level:
           conditionally_required: If the replay stopped on an error.
 
+  - id: metric.ourios.wal.replication.checkpoint.duration
+    type: metric
+    metric_name: ourios.wal.replication.checkpoint.duration
+    stability: development
+    brief: >-
+      Wall-clock duration of a flusher's checkpoint, from its cut until its
+      bundle and `checkpoint.json` are written or the attempt fails
+      (RFC 0065 §6.5).
+    note: >-
+      The flusher of a replication group cuts at its last mined entry,
+      publishes everything buffered through the cut, and writes the cut's
+      bundle (every tenant's miner snapshot, then `bundle.bin`) and then
+      `checkpoint.json` to the object store. One observation is recorded per
+      attempt. A failed attempt purges nothing and the next cut retries;
+      its `error.type` is `object_differs` when a bundle object already
+      holds other bytes, `pointer_unreadable` when `checkpoint.json` does
+      not parse, `no_compare_and_swap` when the store has no conditional
+      update, `store` when a store call failed, and `_OTHER` otherwise. A
+      `checkpoint.json` already at or above the cut is kept and is not an
+      error. The count tunes the checkpoint cadence against how much group
+      WAL the replicas keep.
+    instrument: histogram
+    unit: "s"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+      - ref: error.type
+        requirement_level:
+          conditionally_required: If and only if the checkpoint failed.
+
   - id: metric.ourios.wal.housekeeping.horizon.remaining
     type: metric
     metric_name: ourios.wal.housekeeping.horizon.remaining
