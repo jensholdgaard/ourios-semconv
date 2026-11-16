@@ -1132,6 +1132,33 @@ groups:
       - ref: ourios.wal.group
         requirement_level: required
 
+  - id: metric.ourios.wal.replication.replay.duration
+    type: metric
+    metric_name: ourios.wal.replication.replay.duration
+    stability: development
+    brief: >-
+      Wall-clock duration of a flusher's gap replay, from its start until it
+      ends (RFC 0065 §6.7).
+    note: >-
+      A flusher whose kept output has a gap rebuilds what it dropped by
+      mining its log again in slices, publishing each slice, before it
+      publishes anything it keeps. One observation is recorded per replay,
+      when it reaches the gap, when a checkpoint at or above the gap ends
+      it, or when it stops on an error. Its count is the number of replays
+      and, with `ourios.wal.replication.kept.gap` for their length in
+      entries, tunes the per-group audit bound that causes them.
+      `error.type` is set only when the replay stopped on an error, to the
+      stopped miner's `error.type` or `purged` for an entry the log no
+      longer holds.
+    instrument: histogram
+    unit: "s"
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+      - ref: error.type
+        requirement_level:
+          conditionally_required: If the replay stopped on an error.
+
   - id: metric.ourios.wal.housekeeping.horizon.remaining
     type: metric
     metric_name: ourios.wal.housekeeping.horizon.remaining

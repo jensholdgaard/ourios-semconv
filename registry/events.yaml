@@ -163,16 +163,24 @@ groups:
     stability: development
     brief: >
       A tail replica named as its replication group's flusher publishes
-      nothing, because it cannot read the group's log id (RFC 0065 §6.1).
+      nothing, because it cannot read the group's log id (RFC 0065 §6.1)
+      or cannot rebuild the output its gap dropped (RFC 0065 §6.7).
     note: >
       Emitted at severity WARN when the reason first appears or changes,
       not on every log entry the replica applies. The replica keeps its
       mined output and tries again at each later entry, so nothing
-      acknowledged is lost; publication resumes once `formed.json` is
-      readable. The log body carries the error. `error.type` is
-      `store_read` when the object store refused the read, and otherwise
-      why the record was refused: `malformed`, `unsupported_format`,
-      `other_group`, `other_voters` or `shared_replica`.
+      acknowledged is lost. The log body carries the error. For the log
+      id, publication resumes once `formed.json` is readable, and
+      `error.type` is `store_read` when the object store refused the
+      read, and otherwise why the record was refused: `malformed`,
+      `unsupported_format`, `other_group`, `other_voters` or
+      `shared_replica`. For the gap, publication resumes once a
+      checkpoint at or above the gap applies, and `error.type` is
+      `restore_unavailable` when a checkpoint below the gap applied
+      before the replay had mined past its cut, so the replay must
+      restart from that checkpoint's bundle, and otherwise the
+      `error.type` the replay stopped with, as
+      `ourios.wal.replication.replay.duration` records it.
     attributes:
       - ref: ourios.wal.group
         requirement_level: required
