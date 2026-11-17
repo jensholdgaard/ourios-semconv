@@ -186,6 +186,26 @@ groups:
         requirement_level: required
       - ref: error.type
         requirement_level: required
+  - id: event.ourios.wal.replication.layout.unchecked
+    type: event
+    name: ourios.wal.replication.layout.unchecked
+    stability: development
+    brief: >
+      A replicated node holding Raft state started without checking its
+      configured voting layout against the one recorded in the object
+      store, because the store could not be read (RFC 0065 §6.1, §6.6).
+    note: >
+      Emitted at severity WARN once per such start. The node opens the
+      groups whose Raft state it holds and keeps taking the log, so the
+      group's acknowledgements do not depend on the store (RFC0065.31);
+      the next start that can read the store checks the layout, and one
+      whose configuration differs refuses to start. `error.type` is
+      `store_read`. A node holding no Raft state does not start without
+      the check, and a layout it read but could not record fails its
+      start; neither emits this event.
+    attributes:
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.wal.replication.restore.held
     type: event
     name: ourios.wal.replication.restore.held
