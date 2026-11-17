@@ -608,6 +608,13 @@ groups:
               value: "querier"
               stability: development
               brief: The querier HTTP listener, serving /v1/query + /mcp.
+            - id: replication
+              value: "replication"
+              stability: development
+              brief: >-
+                A replicated node's peer listener, serving replication,
+                forwarded exports and proposals over mutual TLS (RFC 0065
+                §3.8, B21).
         stability: development
         brief: >-
           Which of the server's listeners, TLS-terminating or plaintext,
