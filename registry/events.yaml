@@ -186,6 +186,53 @@ groups:
         requirement_level: required
       - ref: error.type
         requirement_level: required
+  - id: event.ourios.wal.replication.start.waiting
+    type: event
+    name: ourios.wal.replication.start.waiting
+    stability: development
+    brief: >
+      A replicated node's start waits: on the bootstrap lock before it
+      opens its groups (RFC 0065 §6.6), or for one of its groups to form
+      (§6.1).
+    note: >
+      Emitted at severity WARN when the reason first appears or changes,
+      not on every retry; the start retries until it passes. For the
+      lock, `error.type` is `log_ids_store` when the store could not be
+      read or written and `log_ids_unseeded` while another start holds
+      the lock and has not seeded the high-water object. For a group's
+      formation, `ourios.wal.group` names the group and `error.type` is
+      `store_read`, `no_record`, `unanswered`, `not_a_membership`,
+      `encode`, `record_write`, `log_ids_store` or `log_ids_unseeded`. A
+      formation that cannot succeed is not a wait: it stops, reported as
+      `ourios.wal.replication.stopped` with component `formation`.
+    attributes:
+      - ref: error.type
+        requirement_level: required
+      - ref: ourios.wal.group
+        requirement_level:
+          conditionally_required: If and only if the wait is a group's formation.
+  - id: event.ourios.wal.replication.steward.failed
+    type: event
+    name: ourios.wal.replication.steward.failed
+    stability: development
+    brief: >
+      A pass of a replication group leader's steward failed: the learner
+      membership change, flusher assignment, miner configuration or id
+      block it proposed did not commit (RFC 0065 §6.5, §6.7, §6.8).
+    note: >
+      Emitted at severity WARN when the reason first appears or changes,
+      not on every pass; the next pass retries. `error.type` is
+      `not_leader` when this node no longer leads the group,
+      `leader_changed` when the entry was discarded as another leader
+      took over, `membership_refused` when the membership change was
+      refused, `membership_changed` when the membership changed since the
+      pass planned it, and `raft_stopped` when the group's Raft core
+      stopped.
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.wal.replication.layout.unchecked
     type: event
     name: ourios.wal.replication.layout.unchecked

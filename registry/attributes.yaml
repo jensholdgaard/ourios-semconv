@@ -980,6 +980,12 @@ groups:
               brief: >-
                 The group's miner on a tail replica, which mines the
                 applied batches (RFC 0065 §6.7).
+            - id: formation
+              value: "formation"
+              stability: development
+              brief: >-
+                The group's formation on a voter (RFC 0065 §6.1): a group
+                that cannot form takes no write.
         stability: development
         brief: >-
           The part of a replication group a signal is about.
