@@ -186,6 +186,29 @@ groups:
         requirement_level: required
       - ref: error.type
         requirement_level: required
+  - id: event.ourios.wal.replication.restore.held
+    type: event
+    name: ourios.wal.replication.restore.held
+    stability: development
+    brief: >
+      A tail replica that opened from, or installed, a snapshot of its
+      replication group cannot yet restore its miner from the checkpoint's
+      bundle at the snapshot's cut (RFC 0065 §6.5), so it mines and serves
+      nothing for the group while it retries.
+    note: >
+      Emitted at severity WARN when the reason first appears or changes,
+      not on every attempt. The replica keeps applying and replicating the
+      group's log, so the group's acknowledgements do not depend on it, and
+      it retries until it restores; the log body carries the error.
+      `error.type` is `store_read` when the object store could not be read.
+      A bundle that is missing or refused does not hold the restore but
+      stops the miner, reported as `ourios.wal.replication.stopped` with
+      `error.type` `unrestorable`.
+    attributes:
+      - ref: ourios.wal.group
+        requirement_level: required
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.wal.replication.checkpoint.failed
     type: event
     name: ourios.wal.replication.checkpoint.failed
