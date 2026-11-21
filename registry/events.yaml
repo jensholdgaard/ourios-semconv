@@ -667,6 +667,26 @@ groups:
         requirement_level: required
       - ref: ourios.server.listener.name
         requirement_level: required
+  - id: event.ourios.receiver.tenant.hold.started
+    type: event
+    name: ourios.receiver.tenant.hold.started
+    stability: development
+    brief: >
+      A tenant was held because one of its template events could not be
+      written for good (RFC 0056 §3.2): its records stop publishing and
+      its new batches are refused until a restart after the fault is
+      repaired. No acknowledged data is lost; the WAL keeps its records.
+    note: >
+      Emitted once per tenant, at severity WARN, when the hold begins; the
+      tenant then counts on `ourios.receiver.tenant.held`. `error.type`
+      names the lost write with `ourios.receiver.audit_sink.dropped`'s
+      values; an event whose timestamp derives no audit partition is
+      `batch`.
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
+      - ref: error.type
+        requirement_level: required
   - id: event.ourios.receiver.tenant.divergence
     type: event
     name: ourios.receiver.tenant.divergence

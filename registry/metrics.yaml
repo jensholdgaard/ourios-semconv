@@ -395,6 +395,8 @@ groups:
       tenant is unknown before authentication, and a denied tenant is
       chosen by the caller, so it would let an unauthorized client create
       series.
+      A batch refused because its tenant is held (RFC 0056 §3.3) carries
+      `error.type` `tenant_held`, also with no `ourios.tenant`.
     instrument: counter
     unit: "{batch}"
     attributes:
@@ -644,6 +646,26 @@ groups:
       - ref: ourios.server.listener.name
         requirement_level: required
       - ref: ourios.tls.reload_error
+        requirement_level: required
+
+  - id: metric.ourios.receiver.tenant.held
+    type: metric
+    metric_name: ourios.receiver.tenant.held
+    stability: development
+    brief: >-
+      Tenants currently held because their template events could not be
+      written for good (RFC 0056 §3.2).
+    note: >-
+      A held tenant's records stop publishing and its new batches are
+      refused, retryably, until a restart after the fault is repaired;
+      its records stay in the WAL. Each held tenant contributes 1 under
+      its `ourios.tenant`, so the sum is the number held. Holds are rare
+      and end only at a restart, so the series stay few. The local WAL
+      backend holds; the replicated backend does not yet (RFC 0056 §3.6).
+    instrument: updowncounter
+    unit: "{tenant}"
+    attributes:
+      - ref: ourios.tenant
         requirement_level: required
 
   - id: metric.ourios.receiver.tenant.divergences
