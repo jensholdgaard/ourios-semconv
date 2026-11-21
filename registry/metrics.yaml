@@ -658,8 +658,10 @@ groups:
     note: >-
       A held tenant's records stop publishing and its new batches are
       refused, retryably, until a restart after the fault is repaired;
-      its records stay in the WAL. Each held tenant contributes 1 under
-      its `ourios.tenant`, so the sum is the number held. Holds are rare
+      its records stay in the WAL. Each tenant a node holds contributes 1
+      under its `ourios.tenant`. A hold is per node, so across several
+      replicas the sum counts tenant-node holds; the distinct tenants held
+      are the series grouped by `ourios.tenant`. Holds are rare
       and end only at a restart, so the series stay few. The local WAL
       backend holds; the replicated backend does not yet (RFC 0056 §3.6).
     instrument: updowncounter
