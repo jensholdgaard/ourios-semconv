@@ -697,7 +697,10 @@ groups:
     note: >
       Emitted at severity WARN, once per undecodable cell; the cell also
       counts on `ourios.reader.cell.undecodable`. A body is returned as its
-      stored bytes, and an attribute cell as `ourios.attribute.undecodable`.
+      stored bytes, or, when they are not valid UTF-8, as their lossy
+      conversion under the `retained_lossy` reconstruction; storage and
+      compaction keep the exact bytes. An attribute cell is returned as
+      `ourios.attribute.undecodable`.
       `file.path` is the Parquet object's key and `ourios.reader.row.index`
       the row's position in it, so the row can be found and repaired. The
       cell's content is never attached: it may hold masked values.
