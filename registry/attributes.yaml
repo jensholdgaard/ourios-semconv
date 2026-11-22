@@ -385,6 +385,61 @@ groups:
           the total), so the B1 pruned fraction is derived in the backend
           as `pruned / (scanned + pruned)` (RFC 0016; OTel usage/state
           convention — record raw counts, derive the ratio).
+      - id: ourios.attribute.undecodable
+        type: string
+        stability: development
+        brief: >-
+          The stored canonical JSON of a row's attribute cell that did not
+          decode, returned in place of that cell's attributes (RFC 0069
+          §3.2).
+        note: >-
+          A reserved key in query output, never written to storage. When a
+          stored log, resource or scope attribute cell fails to decode (file
+          corruption, a foreign producer, or nesting past the read bound),
+          the query returns this single attribute instead of failing, so the
+          data stays visible and the row says why it is not structured. For
+          a reader masked from any content key of the row's tenant (RFC 0047
+          §3.4) the value is masked as a whole. Compaction never emits it:
+          it carries the stored cell byte for byte.
+        examples: ['[{"key":"k","value":{"stringValue":"v"}']
+      - id: ourios.reader.column.name
+        type:
+          members:
+            - id: body
+              value: "body"
+              stability: development
+              brief: The structured log body.
+            - id: attributes
+              value: "attributes"
+              stability: development
+              brief: The log record's attributes.
+            - id: resource_attributes
+              value: "resource_attributes"
+              stability: development
+              brief: The resource's attributes.
+            - id: scope_attributes
+              value: "scope_attributes"
+              stability: development
+              brief: The instrumentation scope's attributes.
+        stability: development
+        brief: >-
+          The Parquet column holding a stored value the reader could not
+          decode (RFC 0069 §3.2).
+        note: >-
+          The values are the column names of the Ourios Parquet schema (RFC
+          0005) for the four cells stored as canonical JSON. OTel has no
+          attribute for a column of a columnar file; `db.*` names a database
+          operation's collection, not a column.
+      - id: ourios.reader.row.index
+        type: int
+        stability: development
+        brief: >-
+          The 0-based index, within its Parquet file, of a row the reader
+          could not fully decode (RFC 0069 §3.2).
+        note: >-
+          With `file.path` it locates the row for inspection or repair. OTel
+          has no attribute for a record's position within a file.
+        examples: [121]
       - id: ourios.graph.tuple.operation
         type:
           members:

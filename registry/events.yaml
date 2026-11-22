@@ -687,6 +687,27 @@ groups:
         requirement_level: required
       - ref: error.type
         requirement_level: required
+  - id: event.ourios.reader.row.undecodable
+    type: event
+    name: ourios.reader.row.undecodable
+    stability: development
+    brief: >
+      A query read a row with a stored cell that did not decode, and
+      returned that cell degraded instead of failing (RFC 0069 §3.2).
+    note: >
+      Emitted at severity WARN, once per undecodable cell; the cell also
+      counts on `ourios.reader.cell.undecodable`. A body is returned as its
+      stored bytes, and an attribute cell as `ourios.attribute.undecodable`.
+      `file.path` is the Parquet object's key and `ourios.reader.row.index`
+      the row's position in it, so the row can be found and repaired. The
+      cell's content is never attached: it may hold masked values.
+    attributes:
+      - ref: file.path
+        requirement_level: required
+      - ref: ourios.reader.row.index
+        requirement_level: required
+      - ref: ourios.reader.column.name
+        requirement_level: required
   - id: event.ourios.receiver.tenant.divergence
     type: event
     name: ourios.receiver.tenant.divergence

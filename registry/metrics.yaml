@@ -545,6 +545,28 @@ groups:
       - ref: ourios.query.visibility.branch
         requirement_level: required
 
+  - id: metric.ourios.reader.cell.undecodable
+    type: metric
+    metric_name: ourios.reader.cell.undecodable
+    stability: development
+    brief: >-
+      Stored cells a query read but could not decode, returned degraded
+      instead of failing the query (RFC 0069 §3.2).
+    note: >-
+      A cell is one of a row's four canonical-JSON values: the structured
+      body and the log, resource and scope attributes. Each degrades on its
+      own, so one row adds up to four. Ingest writes only cells that decode,
+      so any rise means file corruption, a foreign producer, or nesting past
+      the read bound; each counted cell also emits
+      `ourios.reader.row.undecodable`, which names the file and row.
+    instrument: counter
+    unit: "{cell}"
+    attributes:
+      - ref: ourios.tenant
+        requirement_level: required
+      - ref: ourios.reader.column.name
+        requirement_level: required
+
   - id: metric.ourios.graph.tuples
     type: metric
     metric_name: ourios.graph.tuples
